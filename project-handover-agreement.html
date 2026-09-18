@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>KrissMaagiic Crystals — Project Handover & Legal Agreement</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;1,400&display=swap');
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-size: 13px;
+    color: #2D1B0E;
+    background: #FDFBF9;
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  @page {
+    size: A4;
+    margin: 18mm 15mm 18mm 15mm;
+  }
+
+  @media print {
+    body { background: #fff; font-size: 11.5px; line-height: 1.55; }
+    .page-break { page-break-after: always; break-after: page; }
+    .no-break { page-break-inside: avoid; break-inside: avoid; }
+    .cover { height: 100vh !important; min-height: 100vh !important; }
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* ── Cover Page ── */
+  .cover {
+    height: 100vh;
+    min-height: 900px;
+    background: linear-gradient(135deg, #1C0F07 0%, #2D1B0E 45%, #4A2612 80%, #7A4222 100%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 60px 40px;
+    page-break-after: always;
+    break-after: page;
+    color: #fff;
+    position: relative;
+    box-shadow: inset 0 0 100px rgba(0,0,0,0.5);
+  }
+  .cover-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(200, 149, 108, 0.2);
+    border: 1px solid rgba(200, 149, 108, 0.4);
+    color: #E8C99A;
+    padding: 6px 18px;
+    border-radius: 30px;
+    font-size: 11.5px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    margin-bottom: 24px;
+  }
+  .cover-logo { font-size: 48px; margin-bottom: 16px; color: #E8C99A; }
+  .cover h1 {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 38px;
+    color: #FFFFFF;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    margin-bottom: 12px;
+    line-height: 1.2;
+  }
+  .cover h2 {
+    font-size: 17px;
+    color: #E8C99A;
+    font-weight: 500;
+    margin-bottom: 24px;
+    letter-spacing: 0.5px;
+  }
+  .cover-divider {
+    width: 90px;
+    height: 3px;
+    background: linear-gradient(90deg, transparent, #C8956C, transparent);
+    border-radius: 2px;
+    margin: 0 auto 28px;
+  }
+  .cover-tagline {
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.85);
+    max-width: 620px;
+    line-height: 1.7;
+    margin-bottom: 36px;
+    font-weight: 400;
+  }
+  .cover-meta {
+    background: rgba(0, 0, 0, 0.35);
+    padding: 18px 32px;
+    border-radius: 12px;
+    border: 1px solid rgba(200, 149, 108, 0.35);
+    font-size: 12.5px;
+    text-align: left;
+    backdrop-filter: blur(10px);
+    width: 100%;
+    max-width: 580px;
+  }
+  .cover-meta table { width: 100%; border-collapse: collapse; }
+  .cover-meta table td { padding: 5px 8px; color: #F5EDD8; }
+  .cover-meta table td strong { color: #FFFFFF; font-weight: 600; }
+  .cover-meta table td:first-child { width: 38%; color: #E8C99A; }
+
+  /* ── Document Container ── */
+  .doc-container {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 40px 30px;
+    background: #FFFFFF;
+  }
+  .section { margin-bottom: 36px; }
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 18px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #C8956C;
+  }
+  .section-num {
+    font-size: 11px;
+    font-weight: 800;
+    color: #A0622A;
+    letter-spacing: 1.8px;
+    text-transform: uppercase;
+    display: block;
+  }
+  .section-title {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 21px;
+    font-weight: 700;
+    color: #2D1B0E;
+  }
+
+  h3 { font-size: 14px; font-weight: 700; color: #2D1B0E; margin: 18px 0 8px; }
+  p { margin-bottom: 11px; color: #3A3532; text-align: justify; }
+
+  /* ── Alert & Notice Boxes ── */
+  .box {
+    border-radius: 8px;
+    padding: 14px 18px;
+    margin: 16px 0;
+    font-size: 12.5px;
+    line-height: 1.6;
+  }
+  .box-gold {
+    background: #FAF6F1;
+    border-left: 4px solid #C8956C;
+    border-top: 1px solid rgba(200, 149, 108, 0.2);
+    border-right: 1px solid rgba(200, 149, 108, 0.2);
+    border-bottom: 1px solid rgba(200, 149, 108, 0.2);
+    color: #2D1B0E;
+  }
+  .box-green {
+    background: #F0F9F4;
+    border-left: 4px solid #2E7D32;
+    border-top: 1px solid rgba(46, 125, 50, 0.2);
+    border-right: 1px solid rgba(46, 125, 50, 0.2);
+    border-bottom: 1px solid rgba(46, 125, 50, 0.2);
+    color: #1B5E20;
+  }
+  .box-blue {
+    background: #F0F6FC;
+    border-left: 4px solid #1976D2;
+    border-top: 1px solid rgba(25, 118, 210, 0.2);
+    border-right: 1px solid rgba(25, 118, 210, 0.2);
+    border-bottom: 1px solid rgba(25, 118, 210, 0.2);
+    color: #0D47A1;
+  }
+  .box-title {
+    font-weight: 800;
+    display: block;
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    font-size: 11.5px;
+    letter-spacing: 0.8px;
+  }
+
+  /* ── Tables ── */
+  table.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 16px 0;
+    font-size: 12px;
+  }
+  table.data-table th {
+    background: #2D1B0E;
+    color: #FFFFFF;
+    text-align: left;
+    padding: 9px 12px;
+    font-weight: 700;
+    border: 1px solid #2D1B0E;
+    font-size: 11.5px;
+    letter-spacing: 0.5px;
+  }
+  table.data-table td {
+    padding: 8px 12px;
+    border: 1px solid #E5DDD5;
+    color: #3A3532;
+  }
+  table.data-table tr:nth-child(even) { background: #FAF6F1; }
+  table.data-table code {
+    background: rgba(45, 27, 14, 0.08);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-family: Consolas, monospace;
+    color: #7A4222;
+  }
+
+  /* ── Checklists ── */
+  .checklist { list-style: none; padding: 0; margin: 12px 0; }
+  .checklist li {
+    padding: 6px 0 6px 28px;
+    position: relative;
+    color: #3A3532;
+    font-size: 12.5px;
+  }
+  .checklist li::before {
+    content: '✓';
+    position: absolute;
+    left: 4px;
+    color: #2E7D32;
+    font-weight: 800;
+    font-size: 13px;
+  }
+
+  /* ── Signatures ── */
+  .sign-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+    margin-top: 32px;
+  }
+  .sign-box {
+    border: 1.5px solid #C8956C;
+    border-radius: 10px;
+    padding: 20px;
+    background: #FAF6F1;
+  }
+  .sign-title {
+    font-size: 12.5px;
+    font-weight: 800;
+    color: #2D1B0E;
+    margin-bottom: 14px;
+    border-bottom: 1px solid #E2D9D0;
+    padding-bottom: 6px;
+    letter-spacing: 0.5px;
+  }
+  .sign-line {
+    border-bottom: 1.5px dashed #A0622A;
+    height: 44px;
+    margin-bottom: 12px;
+  }
+  .sign-meta { font-size: 11.5px; color: #555; margin-top: 4px; line-height: 1.5; }
+  .sign-meta strong { color: #2D1B0E; }
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════ COVER PAGE ══════════════════════════════════════════════ -->
+<div class="cover">
+  <div class="cover-badge">✦ Official Handover & Legal Agreement ✦</div>
+  <div class="cover-logo">🔮</div>
+  <h1>KrissMaagiic Crystals</h1>
+  <h2>Custom E-Commerce & Spiritual Booking Platform</h2>
+  <div class="cover-divider"></div>
+  <p class="cover-tagline">
+    Comprehensive Project Handover Documentation, Transfer of Intellectual Property, Delivered Assets Manifest, Lifetime Bug Fixing Warranty & Future Feature Scope Agreement.
+  </p>
+  <div class="cover-meta">
+    <table>
+      <tr><td><strong>Project Name:</strong></td><td>KrissMaagiic Crystals E-Commerce Platform</td></tr>
+      <tr><td><strong>Client Entity:</strong></td><td>KrissMaagiic Crystals (info@krissmaagiiccrystals.com)</td></tr>
+      <tr><td><strong>Developer:</strong></td><td>Madhu Kunchala (Mad Tech Solutions)</td></tr>
+      <tr><td><strong>Primary Production URL:</strong></td><td>https://krissmaagiiccrystals.com</td></tr>
+      <tr><td><strong>Date of Handover:</strong></td><td>September 18, 2026</td></tr>
+      <tr><td><strong>Platform Status:</strong></td><td>✅ 100% Complete, Fully Tested, Migrated & Live</td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════ DOCUMENT BODY ══════════════════════════════════════════════ -->
+<div class="doc-container">
+
+  <!-- SECTION 1: DELIVERABLES -->
+  <div class="section no-break">
+    <div class="section-header">
+      <div>
+        <span class="section-num">SECTION 01</span>
+        <h2 class="section-title">Certificate of Completion & Delivered Scope</h2>
+      </div>
+    </div>
+    <p>
+      This document formally certifies that the custom full-stack web application designed and engineered for <strong>KrissMaagiic Crystals</strong> has been successfully built, quality tested, hardened, and deployed to production. The platform is operating live at <a href="https://krissmaagiiccrystals.com" style="color:#A0622A; text-decoration:none; font-weight:600;">https://krissmaagiiccrystals.com</a>.
+    </p>
+
+    <h3>Key Delivered System Capabilities</h3>
+    <ul class="checklist">
+      <li><strong>Custom Responsive Storefront:</strong> High-speed Next.js storefront showcasing raw crystals, tumbled stones, spiritual jewelry, bracelets, spell jars, rings, and energized items with category filtering and real-time search.</li>
+      <li><strong>Dual-Mode Spiritual Booking Engine:</strong> Complete booking system supporting both <em>Live Scheduled Video Consultations</em> (with calendar slot booking) and <em>Asynchronous WhatsApp Voice Note Readings</em> (flexible 24-48 hr unscheduled fulfillment).</li>
+      <li><strong>Centralized Multi-Currency Engine:</strong> Automatic global geo-location currency detection (₹ INR, $ USD, £ GBP, € EUR, A$ AUD, C$ CAD, etc.), live client-side currency switching, and automatic INR normalization for financial ledger consistency.</li>
+      <li><strong>Dual Payment Gateway Integration:</strong> Integrated Razorpay (Domestic & International cards/UPI/Netbanking) and Cashfree with automated server-side webhook signature verification.</li>
+      <li><strong>High-Speed Cloud Media Storage:</strong> Enterprise Cloudflare R2 object storage for product imagery and video assets, backed by Vercel Edge CDN.</li>
+      <li><strong>Comprehensive Admin Management Suite:</strong> Real-time operations dashboard with multi-currency Excel export capabilities, order processing, booking management, product catalog control, customer testimonials, reels, blogs, and customer reviews.</li>
+      <li><strong>Transactional Email Communications:</strong> Automated Hostinger SMTP emails for order confirmations, booking updates, tracking notes, and password resets.</li>
+    </ul>
+  </div>
+
+  <div class="page-break"></div>
+
+  <!-- SECTION 2: IP & ASSET TRANSFER -->
+  <div class="section no-break">
+    <div class="section-header">
+      <div>
+        <span class="section-num">SECTION 02</span>
+        <h2 class="section-title">Ownership & Intellectual Property Transfer</h2>
+      </div>
+    </div>
+    <p>
+      Effective as of the handover date, the Developer transfers <strong>100% exclusive, unencumbered, perpetual, and worldwide ownership</strong> of all custom source code, databases, media, schemas, configurations, and intellectual property developed for this platform directly to the Client.
+    </p>
+
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Asset / Infrastructure</th>
+          <th>Account / Destination</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Full Source Code Repository</strong></td>
+          <td>GitHub: <code>krissmaagiicrystals-prog/Kriss-Maagiic-Crystals</code></td>
+          <td>✅ Transferred & Pushed</td>
+        </tr>
+        <tr>
+          <td><strong>Production Database</strong></td>
+          <td>MongoDB Atlas: <code>cluster0.f21c9tj.mongodb.net</code> (15 Collections)</td>
+          <td>✅ Migrated & Dedicated</td>
+        </tr>
+        <tr>
+          <td><strong>Cloud Deployment Hosting</strong></td>
+          <td>Vercel Production (Connected to Client's GitHub)</td>
+          <td>✅ Configured & Linked</td>
+        </tr>
+        <tr>
+          <td><strong>High-Speed Object Storage</strong></td>
+          <td>Cloudflare R2 Bucket: <code>website-images</code></td>
+          <td>✅ Transferred & Active</td>
+        </tr>
+        <tr>
+          <td><strong>Payment Gateways</strong></td>
+          <td>Razorpay & Cashfree Live Production Accounts</td>
+          <td>✅ Configured & Live</td>
+        </tr>
+        <tr>
+          <td><strong>Domain & DNS</strong></td>
+          <td><code>krissmaagiiccrystals.com</code> (Hostinger / Cloudflare)</td>
+          <td>✅ 100% Client Owned</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- SECTION 3: SUPPORT & BUG WARRANTY POLICY -->
+  <div class="section no-break">
+    <div class="section-header">
+      <div>
+        <span class="section-num">SECTION 03</span>
+        <h2 class="section-title">Support, Bug Warranty & Change Management Policy</h2>
+      </div>
+    </div>
+    <p>
+      To ensure absolute transparency, trust, and mutual clarity, the operational maintenance policy and distinction between <em>Developer Defects</em> versus <em>New Feature Additions</em> is defined as follows:
+    </p>
+
+    <div class="box box-green">
+      <span class="box-title">🛡️ 1. Free Lifetime Bug & Defect Fixing (Developer Guarantee)</span>
+      <p>
+        Any software bugs, system glitches, broken user flows, calculation inaccuracies, database schema inconsistencies, or functional defects originating from developer oversight or mistakes in the existing codebase will be investigated and <strong>fixed completely FREE of charge</strong> by the Developer.
+      </p>
+      <ul style="margin-left: 20px; font-size: 11.5px; margin-top: 6px;">
+        <li><strong>No Hidden Costs:</strong> Zero fees will be charged for rectifying existing code flaws or developer mistakes.</li>
+        <li><strong>Scope Covered:</strong> All completed modules (Checkout, Orders, Bookings, Multi-Currency calculations, Admin Dashboard, Excel Exports, Email Notifications, and Authentication).</li>
+        <li><strong>Response Commitment:</strong> Critical business-halting bugs will be prioritized immediately for prompt hotfix deployment.</li>
+      </ul>
+    </div>
+
+    <div class="box box-gold">
+      <span class="box-title">💡 2. New Feature Requests & Scope Expansions (Paid Custom Work)</span>
+      <p>
+        Any <strong>new functionality, additional pages, UI/UX redesigns, new payment gateways, third-party ERP/shipping API integrations, or architectural expansions</strong> requested after handover that were not part of the delivered scope of work will be classified as new feature development and billed separately.
+      </p>
+      <ul style="margin-left: 20px; font-size: 11.5px; margin-top: 6px;">
+        <li><strong>Transparent Scope & Quotation:</strong> Client submits requirements; Developer provides a clear time and cost quotation prior to development.</li>
+        <li><strong>No Surprise Invoices:</strong> Work on new features only commences after explicit written confirmation and mutual agreement.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="page-break"></div>
+
+  <!-- SECTION 4: DATA PRIVACY & COMPLIANCE -->
+  <div class="section no-break">
+    <div class="section-header">
+      <div>
+        <span class="section-num">SECTION 04</span>
+        <h2 class="section-title">Data Privacy, Security & Legal Compliance</h2>
+      </div>
+    </div>
+    <p>
+      The platform has been engineered adhering to modern e-commerce data privacy regulations and security industry standards:
+    </p>
+    <ul class="checklist">
+      <li><strong>PCI-DSS Compliance:</strong> Customer payment credentials (credit/debit cards, CVVs, UPI PINs) are processed directly via secure payment gateway modals (Razorpay / Cashfree). No sensitive financial credentials touch or reside on your web servers or database.</li>
+      <li><strong>Data Encryption & Transport Security:</strong> End-to-end TLS/SSL encryption is enforced across all endpoints. Sensitive environment secrets (database URIs, API keys, tokens) are isolated in environment variables.</li>
+      <li><strong>E-Commerce Consumer Regulations:</strong> Complete public policy pages have been built and linked in the footer, including <em>Privacy Policy, Terms of Service, Shipping & Delivery Policy, Refund & Cancellation Policy, and Contact Information</em>.</li>
+      <li><strong>Role-Based Administrative Access:</strong> Admin panel routes are strictly protected by server-side session authentication with Bcrypt password hashing.</li>
+      <li><strong>Automated Data Backups:</strong> Database collections reside on MongoDB Atlas with continuous automated cloud snapshots.</li>
+    </ul>
+  </div>
+
+  <!-- SECTION 5: SIGN-OFF -->
+  <div class="section no-break">
+    <div class="section-header">
+      <div>
+        <span class="section-num">SECTION 05</span>
+        <h2 class="section-title">Execution & Handover Acceptance</h2>
+      </div>
+    </div>
+    <p>
+      By signing below, both parties confirm that the KrissMaagiic Crystals E-Commerce and Booking Platform has been delivered in full, inspected, verified, and accepted in accordance with the terms, warranties, and policies detailed in this agreement.
+    </p>
+
+    <div class="sign-grid">
+      <div class="sign-box">
+        <div class="sign-title">DELIVERED BY (DEVELOPER / AGENCY)</div>
+        <div class="sign-line"></div>
+        <div class="sign-meta"><strong>Authorized Signatory:</strong> Madhu Kunchala</div>
+        <div class="sign-meta"><strong>Company / Designation:</strong> Lead Developer, Mad Tech Solutions</div>
+        <div class="sign-meta"><strong>Contact:</strong> +91 70956 82464 | madhkunchala@gmail.com</div>
+        <div class="sign-meta"><strong>Date:</strong> September 18, 2026</div>
+      </div>
+
+      <div class="sign-box">
+        <div class="sign-title">ACCEPTED BY (CLIENT)</div>
+        <div class="sign-line"></div>
+        <div class="sign-meta"><strong>Authorized Signatory:</strong> ___________________________________</div>
+        <div class="sign-meta"><strong>Company:</strong> KrissMaagiic Crystals</div>
+        <div class="sign-meta"><strong>Designation / Role:</strong> Founder / Owner</div>
+        <div class="sign-meta"><strong>Date:</strong> ___________________________________</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>

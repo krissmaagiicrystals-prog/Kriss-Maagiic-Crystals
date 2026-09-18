@@ -39,12 +39,11 @@ async function main() {
     const collections = await db.listCollections().toArray();
     console.log(`Found ${collections.length} collections.`);
 
-    // Create export folder on the Desktop
-    const desktopPath = path.join(os.homedir(), 'Desktop');
-    const exportDir = path.join(desktopPath, 'krissmaagiic_db_export');
+    // Create export folder in project root
+    const exportDir = path.join(process.cwd(), 'backup_db_export');
 
     if (!fs.existsSync(exportDir)) {
-      fs.mkdirSync(exportDir);
+      fs.mkdirSync(exportDir, { recursive: true });
     }
 
     for (const colInfo of collections) {

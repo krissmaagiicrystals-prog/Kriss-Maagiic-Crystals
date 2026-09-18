@@ -2,6 +2,11 @@ import dotenv from 'dotenv';
 import path from 'path';
 dotenv.config({ path: path.resolve(process.cwd(), '.env.local') });
 
+import dns from 'dns';
+if (process.platform === 'win32') {
+  dns.setServers(['8.8.8.8', '1.1.1.1']);
+}
+
 import mongoose from 'mongoose';
 import { Booking } from '../src/models/Booking';
 

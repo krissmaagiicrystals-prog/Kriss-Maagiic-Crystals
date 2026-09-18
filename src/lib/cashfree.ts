@@ -1,8 +1,8 @@
 import crypto from 'crypto';
 
-const CF_APP_ID  = process.env.CASHFREE_APP_ID || 'TEST1110676869ebf44ae13ff5fb3c9b86760111';
-const CF_SECRET  = process.env.CASHFREE_SECRET_KEY || 'cfsk_ma_test_2d7a003fdaac33f85f3dc829ee99f8cd_10a0d511';
-const CASHFREE_ENV = process.env.CASHFREE_ENV || 'test';
+const CF_APP_ID  = process.env.CASHFREE_APP_ID || '';
+const CF_SECRET  = process.env.CASHFREE_SECRET_KEY || '';
+const CASHFREE_ENV = process.env.CASHFREE_ENV || 'production';
 
 const CASHFREE_BASE_URL = CASHFREE_ENV.toLowerCase() === 'production'
   ? 'https://api.cashfree.com/pg'

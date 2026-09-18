@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>KrissMaagiic Crystals — Technical Architecture & Project Overview</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,400&display=swap');
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-size: 13px;
+    color: #2D1B0E;
+    background: #FDFBF9;
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  @page {
+    size: A4;
+    margin: 18mm 15mm 18mm 15mm;
+  }
+
+  @media print {
+    body { background: #fff; font-size: 11.5px; line-height: 1.55; }
+    .page-break { page-break-after: always; break-after: page; }
+    .no-break { page-break-inside: avoid; break-inside: avoid; }
+    .cover { height: 100vh !important; min-height: 100vh !important; }
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* ── Cover Page ── */
+  .cover {
+    height: 100vh;
+    min-height: 900px;
+    background: linear-gradient(135deg, #1C0F07 0%, #2D1B0E 45%, #4A2612 80%, #7A4222 100%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 60px 40px;
+    page-break-after: always;
+    break-after: page;
+    color: #fff;
+    position: relative;
+    box-shadow: inset 0 0 100px rgba(0,0,0,0.5);
+  }
+  .cover-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(200, 149, 108, 0.2);
+    border: 1px solid rgba(200, 149, 108, 0.4);
+    color: #E8C99A;
+    padding: 6px 18px;
+    border-radius: 30px;
+    font-size: 11.5px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    margin-bottom: 24px;
+  }
+  .cover-logo { font-size: 48px; margin-bottom: 16px; color: #E8C99A; }
+  .cover h1 {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 36px;
+    color: #FFFFFF;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    margin-bottom: 12px;
+    line-height: 1.2;
+  }
+  .cover h2 {
+    font-size: 16px;
+    color: #E8C99A;
+    font-weight: 500;
+    margin-bottom: 24px;
+    letter-spacing: 0.5px;
+  }
+  .cover-divider {
+    width: 90px;
+    height: 3px;
+    background: linear-gradient(90deg, transparent, #C8956C, transparent);
+    border-radius: 2px;
+    margin: 0 auto 28px;
+  }
+  .cover-tagline {
+    font-size: 13.5px;
+    color: rgba(255, 255, 255, 0.85);
+    max-width: 620px;
+    line-height: 1.7;
+    margin-bottom: 36px;
+    font-weight: 400;
+  }
+  .cover-meta {
+    background: rgba(0, 0, 0, 0.35);
+    padding: 18px 32px;
+    border-radius: 12px;
+    border: 1px solid rgba(200, 149, 108, 0.35);
+    font-size: 12px;
+    text-align: left;
+    backdrop-filter: blur(10px);
+    width: 100%;
+    max-width: 580px;
+  }
+  .cover-meta table { width: 100%; border-collapse: collapse; }
+  .cover-meta table td { padding: 5px 8px; color: #F5EDD8; }
+  .cover-meta table td strong { color: #FFFFFF; font-weight: 600; }
+  .cover-meta table td:first-child { width: 38%; color: #E8C99A; }
+
+  /* ── Layout & Sections ── */
+  .doc-container {
+    max-width: 880px;
+    margin: 0 auto;
+    padding: 40px 30px;
+    background: #FFFFFF;
+  }
+  .section { margin-bottom: 38px; }
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 18px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #C8956C;
+  }
+  .section-num {
+    font-size: 11px;
+    font-weight: 800;
+    color: #A0622A;
+    letter-spacing: 1.8px;
+    text-transform: uppercase;
+    display: block;
+  }
+  .section-title {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 20px;
+    font-weight: 700;
+    color: #2D1B0E;
+  }
+
+  h3 { font-size: 14px; font-weight: 700; color: #2D1B0E; margin: 18px 0 8px; }
+  h4 { font-size: 12.5px; font-weight: 700; color: #7A4222; margin: 12px 0 6px; }
+  p { margin-bottom: 11px; color: #3A3532; text-align: justify; }
+
+  /* ── Code & Pre ── */
+  code {
+    font-family: 'JetBrains Mono', Consolas, monospace;
+    font-size: 11.5px;
+    background: rgba(45, 27, 14, 0.07);
+    color: #7A4222;
+    padding: 2px 6px;
+    border-radius: 4px;
+  }
+  pre {
+    background: #1C0F07;
+    color: #F5EDD8;
+    padding: 14px 18px;
+    border-radius: 8px;
+    font-family: 'JetBrains Mono', Consolas, monospace;
+    font-size: 11.5px;
+    line-height: 1.5;
+    overflow-x: auto;
+    margin: 12px 0 16px;
+    border-left: 4px solid #C8956C;
+  }
+
+  /* ── Boxes ── */
+  .box {
+    border-radius: 8px;
+    padding: 14px 18px;
+    margin: 16px 0;
+    font-size: 12.5px;
+    line-height: 1.6;
+  }
+  .box-gold {
+    background: #FAF6F1;
+    border-left: 4px solid #C8956C;
+    border-top: 1px solid rgba(200, 149, 108, 0.2);
+    border-right: 1px solid rgba(200, 149, 108, 0.2);
+    border-bottom: 1px solid rgba(200, 149, 108, 0.2);
+    color: #2D1B0E;
+  }
+  .box-green {
+    background: #F0F9F4;
+    border-left: 4px solid #2E7D32;
+    color: #1B5E20;
+  }
+  .box-blue {
+    background: #F0F6FC;
+    border-left: 4px solid #1976D2;
+    color: #0D47A1;
+  }
+  .box-title {
+    font-weight: 800;
+    display: block;
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    font-size: 11.5px;
+    letter-spacing: 0.8px;
+  }
+
+  /* ── Tables ── */
+  table.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 14px 0 18px;
+    font-size: 12px;
+  }
+  table.data-table th {
+    background: #2D1B0E;
+    color: #FFFFFF;
+    text-align: left;
+    padding: 8px 10px;
+    font-weight: 700;
+    border: 1px solid #2D1B0E;
+    font-size: 11px;
+    letter-spacing: 0.5px;
+  }
+  table.data-table td {
+    padding: 8px 10px;
+    border: 1px solid #E5DDD5;
+    color: #3A3532;
+  }
+  table.data-table tr:nth-child(even) { background: #FAF6F1; }
+
+  /* ── Grid Cards ── */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 14px 0; }
+  .grid-card {
+    background: #FAF6F1;
+    border: 1px solid rgba(200, 149, 108, 0.25);
+    border-radius: 8px;
+    padding: 14px 16px;
+  }
+  .grid-card h4 { margin-top: 0; color: #2D1B0E; font-size: 13px; margin-bottom: 6px; }
+  .grid-card p { margin-bottom: 0; font-size: 11.5px; color: #555; }
+
+  /* ── Checklists ── */
+  .checklist { list-style: none; padding: 0; margin: 12px 0; }
+  .checklist li {
+    padding: 5px 0 5px 24px;
+    position: relative;
+    color: #3A3532;
+    font-size: 12px;
+  }
+  .checklist li::before {
+    content: '✦';
+    position: absolute;
+    left: 4px;
+    color: #C8956C;
+    font-size: 11px;
+  }
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════ COVER PAGE ══════════════════════════════════════════════ -->
+<div class="cover">
+  <div class="cover-badge">✦ Technical Architecture & Engineering Documentation ✦</div>
+  <div class="cover-logo">⚡</div>
+  <h1>KrissMaagiic Crystals</h1>
+  <h2>System Architecture, Database Specs & Admin Guide</h2>
+  <div class="cover-divider"></div>
+  <p class="cover-tagline">
+    Comprehensive technical reference detailing the full-stack architecture, MongoDB database schema, multi-currency engine, payment gateways, environment variables, and password reset procedures.
+  </p>
+  <div class="cover-meta">
+    <table>
+      <tr><td><strong>Application:</strong></td><td>KrissMaagiic Crystals E-Commerce Platform</td></tr>
+      <tr><td><strong>Production URL:</strong></td><td>https://krissmaagiiccrystals.com</td></tr>
+      <tr><td><strong>Primary Framework:</strong></td><td>Next.js 15 (App Router, React 19, TypeScript)</td></tr>
+      <tr><td><strong>Database Cluster:</strong></td><td>MongoDB Atlas (Dedicated Cloud Cluster)</td></tr>
+      <tr><td><strong>Repository:</strong></td><td>github.com/krissmaagiicrystals-prog/Kriss-Maagiic-Crystals</td></tr>
+      <tr><td><strong>Author / Agency:</strong></td><td>Madhu Kunchala (Mad Tech Solutions)</td></tr>
+      <tr><td><strong>Documentation Date:</strong></td><td>September 2026</td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════ DOCUMENT BODY ══════════════════════════════════════════════ -->
+<div class="doc-container">
+
+  <!-- SECTION 1: ARCHITECTURE OVERVIEW -->
+  <div class="section no-break">
+    <div class="section-header">
+      <div>
+        <span class="section-num">SECTION 01</span>
+        <h2 class="section-title">System Architecture & Technology Stack</h2>
+      </div>
+    </div>
+    <p>
+      The platform is engineered on modern cloud-native serverless architecture optimized for high performance, rapid page load times, SEO indexing, and robust transaction security.
+    </p>
+
+    <div class="grid-2">
+      <div class="grid-card">
+        <h4>🖥️ Frontend & Edge Layer</h4>
+        <p><strong>Next.js 15 App Router</strong> with React Server Components (RSC), TailwindCSS styling, Framer Motion animations, and global Vercel Edge CDN distribution.</p>
+      </div>
+      <div class="grid-card">
+        <h4>🗄️ Database & Storage</h4>
+        <p><strong>MongoDB Atlas (v8.0)</strong> with Mongoose ODM for resilient document persistence, paired with <strong>Cloudflare R2 Object Storage</strong> for high-speed image & video delivery.</p>
+      </div>
+      <div class="grid-card">
+        <h4>💳 Dual Payment Infrastructure</h4>
+        <p><strong>Razorpay & Cashfree</strong> integrated with server-side signature verification webhooks and automatic currency settlement into INR.</p>
+      </div>
+      <div class="grid-card">
+        <h4>✉️ Messaging & Communications</h4>
+        <p><strong>Hostinger Enterprise SMTP</strong> via Nodemailer for automated transactional order confirmations, booking status emails, and password recovery.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="page-break"></div>
+
+  <!-- SECTION 2: DATABASE COLLECTIONS & SCHEMA -->
+  <div class="section no-break">
+    <div class="section-header">
+      <div>
+        <span class="section-num">SECTION 02</span>
+        <h2 class="section-title">Database Models & Schema Dictionary</h2>
+      </div>
+    </div>
+    <p>
+      The production database is hosted on MongoDB Atlas (<code>cluster0.f21c9tj.mongodb.net/krissmaagiic</code>) structured across 15 collections:
+    </p>
+
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Collection</th>
+          <th>Model File</th>
+          <th>Description & Key Attributes</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>products</code></td>
+          <td><code>Product.ts</code></td>
+          <td>Product catalog items (slug, name, price, originalPrice, inrPrice, usdPrice, category, stock, images, active status, trash flags).</td>
+        </tr>
+        <tr>
+          <td><code>orders</code></td>
+          <td><code>Order.ts</code></td>
+          <td>Customer shop purchases (orderNumber, customer details, shipping address, line items, totalAmount, inrAmount, currency, paymentStatus, orderStatus).</td>
+        </tr>
+        <tr>
+          <td><code>bookings</code></td>
+          <td><code>Booking.ts</code></td>
+          <td>Spiritual consultations & readings (bookingNumber, serviceTitle, serviceType, date, slot, currency, servicePrice, inrAmount, status, notes).</td>
+        </tr>
+        <tr>
+          <td><code>users</code></td>
+          <td><code>User.ts</code></td>
+          <td>Customer accounts and admin users (email, name, role [<code>admin</code> / <code>customer</code>], passwordHash, active, resetToken).</td>
+        </tr>
+        <tr>
+          <td><code>services</code></td>
+          <td><code>Service.ts</code></td>
+          <td>Online crystal healing & tarot reading offerings (name, duration, price, usdPrice, category, isActive, image).</td>
+        </tr>
+        <tr>
+          <td><code>homeservices</code></td>
+          <td><code>HomeService.ts</code></td>
+          <td>In-person on-site spiritual consultation offerings (title, location scope, pricing, duration, active status).</td>
+        </tr>
+        <tr>
+          <td><code>testimonials</code></td>
+          <td><code>Testimonial.ts</code></td>
+          <td>Homepage reviews & client ratings with soft-delete trash bin management.</td>
+        </tr>
+        <tr>
+          <td><code>reviews</code></td>
+          <td><code>Review.ts</code></td>
+          <td>Product reviews submitted by verified buyers on product pages (rating, comment, visible flag).</td>
+        </tr>
+        <tr>
+          <td><code>reels</code></td>
+          <td><code>Reel.ts</code></td>
+          <td>Homepage video reels with drag-and-drop sort orders and Cloudflare R2 video URLs.</td>
+        </tr>
+        <tr>
+          <td><code>messages</code></td>
+          <td><code>Message.ts</code></td>
+          <td>Inbound contact form enquiries submitted by website visitors.</td>
+        </tr>
+        <tr>
+          <td><code>settings</code></td>
+          <td><code>Settings.ts</code></td>
+          <td>Global store configuration, top announcement banner text, and carousel hero sliders.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="page-break"></div>
+
+  <!-- SECTION 3: CORE FUNCTIONAL ENGINES -->
+  <div class="section no-break">
+    <div class="section-header">
+      <div>
+        <span class="section-num">SECTION 03</span>
+        <h2 class="section-title">Core Functional Engines & Logic</h2>
+      </div>
+    </div>
+
+    <h3>1. Multi-Currency Engine & Financial Normalization</h3>
+    <p>
+      The platform contains a centralized currency computation engine located in <code>src/lib/money.ts</code>. It automatically identifies the customer's geographic currency based on IP or user selection (INR, USD, GBP, EUR, AUD, CAD, etc.). 
+      When orders or bookings are settled, the system records both the native customer currency transaction and the calculated <strong><code>inrAmount</code></strong>.
+    </p>
+
+    <h3>2. Dual Spiritual Booking Modes</h3>
+    <ul class="checklist">
+      <li><strong>Scheduled Live Video Consultations:</strong> Requires the customer to pick an exact calendar date and slot from available admin-defined slots.</li>
+      <li><strong>Asynchronous WhatsApp Voice Note Readings:</strong> Does not require slot scheduling. Displays <em>"Flexible delivery within 24–48 hours via WhatsApp Voice Notes"</em> and records booking as unscheduled for admin turnaround.</li>
+    </ul>
+
+    <h3>3. Multi-Currency Excel Financial Reports</h3>
+    <p>
+      The Admin dashboard exports both <strong>Monthly Summaries</strong> and <strong>Full 5-Sheet Database Workbooks</strong>. Each line displays the native currency paid by international customers (e.g. £10 GBP) while converting and aggregating all revenue columns into INR totals for flawless accounting reconciliation.
+    </p>
+  </div>
+
+  <!-- SECTION 4: ENVIRONMENT VARIABLES REFERENCE -->
+  <div class="section no-break">
+    <div class="section-header">
+      <div>
+        <span class="section-num">SECTION 04</span>
+        <h2 class="section-title">Environment Variables & Credentials Dictionary</h2>
+      </div>
+    </div>
+    <p>
+      The table below details all production environment keys configured in Vercel and local <code>.env.local</code>:
+    </p>
+
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Variable Name</th>
+          <th>Purpose & Description</th>
+          <th>Configuration Scope</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>MONGODB_URI</code></td>
+          <td>Connection string for MongoDB Atlas database cluster.</td>
+          <td>Vercel & <code>.env.local</code></td>
+        </tr>
+        <tr>
+          <td><code>MONGODB_DB</code></td>
+          <td>Target database name (<code>krissmaagiic</code>).</td>
+          <td>Vercel & <code>.env.local</code></td>
+        </tr>
+        <tr>
+          <td><code>AUTH_SECRET</code></td>
+          <td>Cryptographic secret used to encrypt admin sessions and JWT tokens.</td>
+          <td>Vercel & <code>.env.local</code></td>
+        </tr>
+        <tr>
+          <td><code>RAZORPAY_KEY_ID</code></td>
+          <td>Public Razorpay API Key for live customer checkout.</td>
+          <td>Vercel & <code>.env.local</code></td>
+        </tr>
+        <tr>
+          <td><code>RAZORPAY_KEY_SECRET</code></td>
+          <td>Private Razorpay Secret Key for server-side verification.</td>
+          <td>Vercel & <code>.env.local</code></td>
+        </tr>
+        <tr>
+          <td><code>CASHFREE_APP_ID</code></td>
+          <td>Cashfree Application ID for secondary payment routing.</td>
+          <td>Vercel & <code>.env.local</code></td>
+        </tr>
+        <tr>
+          <td><code>CASHFREE_SECRET_KEY</code></td>
+          <td>Cashfree Secret Key for signature verification.</td>
+          <td>Vercel & <code>.env.local</code></td>
+        </tr>
+        <tr>
+          <td><code>R2_ACCESS_KEY_ID</code></td>
+          <td>Cloudflare R2 Object Storage Access Key ID for media uploads.</td>
+          <td>Vercel & <code>.env.local</code></td>
+        </tr>
+        <tr>
+          <td><code>R2_SECRET_ACCESS_KEY</code></td>
+          <td>Cloudflare R2 Storage Secret Access Key.</td>
+          <td>Vercel & <code>.env.local</code></td>
+        </tr>
+        <tr>
+          <td><code>R2_BUCKET_NAME</code></td>
+          <td>Name of Cloudflare R2 bucket (<code>website-images</code>).</td>
+          <td>Vercel & <code>.env.local</code></td>
+        </tr>
+        <tr>
+          <td><code>NEXT_PUBLIC_R2_URL</code></td>
+          <td>Public CDN endpoint for serving crystal images and videos.</td>
+          <td>Vercel & <code>.env.local</code></td>
+        </tr>
+        <tr>
+          <td><code>SMTP_HOST</code></td>
+          <td>Hostinger SMTP Server (<code>smtp.hostinger.com</code>).</td>
+          <td>Vercel & <code>.env.local</code></td>
+        </tr>
+        <tr>
+          <td><code>SMTP_PORT</code></td>
+          <td>Secure SSL port for SMTP (<code>465</code>).</td>
+          <td>Vercel & <code>.env.local</code></td>
+        </tr>
+        <tr>
+          <td><code>SMTP_USER</code></td>
+          <td>Sender mailbox account (<code>info@krissmaagiiccrystals.com</code>).</td>
+          <td>Vercel & <code>.env.local</code></td>
+        </tr>
+        <tr>
+          <td><code>SMTP_PASS</code></td>
+          <td>Secure mailbox password for sending transactional emails.</td>
+          <td>Vercel & <code>.env.local</code></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="page-break"></div>
+
+  <!-- SECTION 5: ADMIN PASSWORD RESET PROCEDURES -->
+  <div class="section no-break">
+    <div class="section-header">
+      <div>
+        <span class="section-num">SECTION 05</span>
+        <h2 class="section-title">Admin Account Management & Password Reset Guide</h2>
+      </div>
+    </div>
+    <p>
+      Administrative access to the backend control center is available at <a href="https://krissmaagiiccrystals.com/admin/login" style="color:#A0622A; text-decoration:none; font-weight:600;">/admin/login</a>. If the admin password is ever forgotten or needs to be changed, use one of the two standard procedures below:
+    </p>
+
+    <h3>Method 1: Instant Reset via Dedicated CLI Script (Recommended)</h3>
+    <p>
+      A dedicated password reset utility has been placed at <code>scripts/reset-admin-password.ts</code>. You can run this command from the project root in your terminal:
+    </p>
+    <pre>npx tsx scripts/reset-admin-password.ts "krissmaagiicrystals@gmail.com" "YourNewStrongPassword@2026"</pre>
+    <p>
+      This script connects directly to MongoDB Atlas, hashes the password using Bcrypt with 12 salt rounds, sets the user role to <code>admin</code>, and enables the account immediately.
+    </p>
+
+    <h3>Method 2: Direct MongoDB Atlas Web Portal Update</h3>
+    <ol class="checklist" style="list-style-type: decimal; margin-left: 20px;">
+      <li>Log in to <a href="https://cloud.mongodb.com" target="_blank" style="color:#A0622A;">MongoDB Atlas</a> using your credentials.</li>
+      <li>Navigate to <strong>Browse Collections</strong> ➔ <code>krissmaagiic</code> database ➔ <code>users</code> collection.</li>
+      <li>Locate the document where <code>email: "krissmaagiicrystals@gmail.com"</code>.</li>
+      <li>Update the <code>passwordHash</code> field with a freshly hashed Bcrypt string (or run Method 1 above).</li>
+      <li>Ensure <code>role: "admin"</code> and <code>active: true</code>.</li>
+    </ol>
+
+    <div class="box box-gold">
+      <span class="box-title">🔐 Current Production Admin Credentials</span>
+      <p>
+        <strong>Admin Login URL:</strong> <code>https://krissmaagiiccrystals.com/admin/login</code><br />
+        <strong>Admin Email:</strong> <code>krissmaagiicrystals@gmail.com</code><br />
+        <strong>Default Password:</strong> <code>ChangeMe@2026</code> <em>(Please change to your private password upon initial login)</em>
+      </p>
+    </div>
+  </div>
+
+  <!-- SECTION 6: MAINTENANCE & DEPLOYMENT -->
+  <div class="section no-break">
+    <div class="section-header">
+      <div>
+        <span class="section-num">SECTION 06</span>
+        <h2 class="section-title">Deployment, GitHub Sync & Maintenance</h2>
+      </div>
+    </div>
+    <p>
+      The platform follows continuous integration and automatic deployment (CI/CD) practices:
+    </p>
+    <ul class="checklist">
+      <li><strong>Automatic Deployment:</strong> Every push to the <code>main</code> branch of the GitHub repository (<code>krissmaagiicrystals-prog/Kriss-Maagiic-Crystals</code>) automatically triggers an optimized production build on Vercel.</li>
+      <li><strong>Database Backups:</strong> MongoDB Atlas executes continuous automated point-in-time cloud snapshots for zero-data-loss disaster recovery.</li>
+      <li><strong>Local Development:</strong> Run <code>npm run dev</code> to launch the local test server at <code>http://localhost:3000</code>.</li>
+    </ul>
+  </div>
+
+</div>
+
+</body>
+</html>

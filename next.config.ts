@@ -53,6 +53,17 @@ const nextConfig: NextConfig = {
         destination: '/checkout',
         permanent: true,
       },
+      {
+        source: '/',
+        has: [
+          {
+            type: 'query',
+            key: 's',
+          },
+        ],
+        destination: '/shop',
+        permanent: true,
+      },
     ];
   },
   experimental: {

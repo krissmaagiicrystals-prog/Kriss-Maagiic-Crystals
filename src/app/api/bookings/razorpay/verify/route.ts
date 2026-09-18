@@ -4,6 +4,7 @@ import { connectMongoose } from '@/lib/mongoose';
 import { Booking } from '@/models/Booking';
 import { isRazorpayConfigured, verifyPaymentSignature } from '@/lib/razorpay';
 import { fulfillPaidBooking } from '@/lib/bookingFulfillment';
+import { getInrEquivalent } from '@/lib/money';
 import { z } from 'zod';
 
 const verifySchema = z.object({
@@ -64,6 +65,7 @@ export async function POST(req: Request) {
   booking.paymentStatus = 'paid';
   booking.status = 'booked';
   booking.razorpayPaymentId = razorpay_payment_id;
+  booking.inrAmount = getInrEquivalent(booking.servicePrice, booking.currency);
   await booking.save();
 
   await fulfillPaidBooking(booking);

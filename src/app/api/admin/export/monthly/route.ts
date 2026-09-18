@@ -4,6 +4,7 @@ import { requireAdmin } from '@/lib/adminGuard';
 import { connectMongoose } from '@/lib/mongoose';
 import { Order } from '@/models/Order';
 import { Booking } from '@/models/Booking';
+import { getInrEquivalent, currencySymbol } from '@/lib/money';
 
 // ── Brand colours (no # prefix for ExcelJS) ──
 const C = {
@@ -84,8 +85,8 @@ export async function GET(req: Request) {
 
   const paidOrders    = orders.filter((o) => o.paymentStatus === 'paid');
   const paidBookings  = bookings.filter((b) => b.paymentStatus === 'paid');
-  const orderRevenue  = paidOrders.reduce((s, o) => s + (o.total || o.subtotal || 0), 0);
-  const bookingRevenue = paidBookings.reduce((s, b) => s + (b.servicePrice || 0), 0);
+  const orderRevenue  = paidOrders.reduce((s, o) => s + getInrEquivalent(o.total || o.subtotal || 0, o.currency, o.inrAmount), 0);
+  const bookingRevenue = paidBookings.reduce((s, b) => s + getInrEquivalent(b.servicePrice || 0, b.currency, b.inrAmount), 0);
   const totalRevenue  = orderRevenue + bookingRevenue;
   const monthName     = start.toLocaleString('default', { month: 'long' });
 
@@ -98,7 +99,7 @@ export async function GET(req: Request) {
      SHEET 1 — SUMMARY
   ═══════════════════════════════════ */
   const ws1 = wb.addWorksheet('Summary', { properties: { tabColor: { argb: 'FF' + C.gold } } });
-  ws1.columns = [{ width: 32 }, { width: 18 }, { width: 22 }];
+  ws1.columns = [{ width: 32 }, { width: 18 }, { width: 24 }];
 
   // Title row (merged)
   ws1.mergeCells('A1:C1');
@@ -122,7 +123,7 @@ export async function GET(req: Request) {
   ws1.getRow(3).height = 8;
 
   // Column headers
-  const headers1 = ['Metric', 'Count', 'Revenue (₹)'];
+  const headers1 = ['Metric', 'Count', 'Revenue (₹ INR)'];
   ws1.getRow(4).height = 26;
   headers1.forEach((h, i) => {
     const cell = ws1.getRow(4).getCell(i + 1);
@@ -144,13 +145,14 @@ export async function GET(req: Request) {
       const cell = exRow.getCell(ci + 1);
       cell.value = val === '' ? null : val;
       applyDataCell(cell, ri % 2 === 0, ci === 0 ? 'left' : 'center');
+      if (ci === 2 && typeof val === 'number') cell.numFmt = '₹#,##0.00';
     });
   });
 
   // Total revenue row (highlighted)
   const totalRow = ws1.getRow(9);
   totalRow.height = 26;
-  const totLabels: CellValue[] = ['✦  Total Revenue', '', totalRevenue];
+  const totLabels: CellValue[] = ['✦  Total Revenue (INR)', '', totalRevenue];
   totLabels.forEach((val, ci) => {
     const cell = totalRow.getCell(ci + 1);
     cell.value = val === '' ? null : val;
@@ -163,20 +165,13 @@ export async function GET(req: Request) {
       left:   { style: 'thin',   color: { argb: 'FF' + C.gold } },
       right:  { style: 'thin',   color: { argb: 'FF' + C.gold } },
     };
+    if (ci === 2) cell.numFmt = '₹#,##0.00';
   });
-  // Number format for revenue cell
-  totalRow.getCell(3).numFmt = '₹#,##0.00';
-  ws1.getRow(6).getCell(3).numFmt = '₹#,##0.00';
-  ws1.getRow(8).getCell(3).numFmt = '₹#,##0.00';
 
-  // Spacer + stats box
-  ws1.getRow(10).height = 12;
-  ws1.mergeCells('A11:C11');
-  const footerCell = ws1.getCell('A11');
-  footerCell.value = `Generated on ${new Date().toLocaleString('en-IN')}  |  KrissMaagiic Crystals Admin`;
-  footerCell.font  = { italic: true, size: 9, color: { argb: 'FF' + C.goldDeep }, name: 'Calibri' };
-  footerCell.fill  = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF' + C.cream } };
-  footerCell.alignment = { horizontal: 'center' };
+  // Footer notes
+  const notesRow = ws1.getRow(11);
+  notesRow.getCell(1).value = `* International currencies are converted to INR using standard settlement exchange rates.`;
+  notesRow.getCell(1).font = { italic: true, size: 9, color: { argb: 'FF888888' }, name: 'Calibri' };
 
   /* ═══════════════════════════════════
      SHEET 2 — PRODUCTS
@@ -184,12 +179,13 @@ export async function GET(req: Request) {
   const ws2 = wb.addWorksheet('Products', { properties: { tabColor: { argb: 'FF4CAF50' } } });
   ws2.columns = [
     { width: 18 }, { width: 13 }, { width: 22 }, { width: 28 },
-    { width: 15 }, { width: 30 }, { width: 7  }, { width: 13 },
-    { width: 13 }, { width: 13 }, { width: 14 }, { width: 14 }, { width: 15 },
+    { width: 15 }, { width: 30 }, { width: 7  }, { width: 10 },
+    { width: 13 }, { width: 13 }, { width: 13 }, { width: 14 },
+    { width: 16 }, { width: 14 }, { width: 15 },
   ];
 
   // Title
-  ws2.mergeCells('A1:M1');
+  ws2.mergeCells('A1:O1');
   const p1 = ws2.getCell('A1');
   p1.value = `KrissMaagiic — Product Orders  |  ${monthName} ${year}`;
   p1.font  = { bold: true, size: 13, color: { argb: 'FF' + C.goldLight }, name: 'Calibri' };
@@ -198,7 +194,7 @@ export async function GET(req: Request) {
   ws2.getRow(1).height = 30;
 
   // Headers
-  const prodHeaders = ['Order #', 'Date', 'Customer', 'Email', 'Phone', 'Product', 'Qty', 'Unit Price', 'Line Total', 'Shipping', 'Order Total', 'Order Status', 'Payment'];
+  const prodHeaders = ['Order #', 'Date', 'Customer', 'Email', 'Phone', 'Product', 'Qty', 'Currency', 'Unit Price', 'Line Total', 'Shipping', 'Order Total', 'Total (₹ INR)', 'Order Status', 'Payment'];
   ws2.getRow(2).height = 24;
   prodHeaders.forEach((h, i) => {
     const cell = ws2.getRow(2).getCell(i + 1);
@@ -211,13 +207,14 @@ export async function GET(req: Request) {
   let rowIdx2 = 3;
   let totalLineAmt = 0;
   let totalShippingAmt = 0;
-  let totalOrderRevenue = 0;
+  let totalOrderRevenueInr = 0;
 
   for (const o of orders) {
     const date = new Date(o.createdAt).toLocaleDateString('en-IN');
     const isPaid = o.paymentStatus === 'paid';
+    const orderInrTotal = getInrEquivalent(o.total || o.subtotal || 0, o.currency, o.inrAmount);
     if (isPaid) {
-      totalOrderRevenue += (o.total || o.subtotal || 0);
+      totalOrderRevenueInr += orderInrTotal;
       totalShippingAmt += (o.shipping ?? 0);
     }
     
@@ -233,26 +230,28 @@ export async function GET(req: Request) {
 
       const shippingVal = itemIdx === 0 ? (o.shipping ?? 0) : 0;
       const orderTotalVal = itemIdx === 0 ? (o.total || o.subtotal || 0) : 0;
+      const orderInrVal = itemIdx === 0 ? orderInrTotal : 0;
 
       const vals: CellValue[] = [
         o.orderNumber, date,
         o.customer?.name || '', o.customer?.email || '', o.customer?.phone || '',
-        item.name, item.qty, item.price, item.lineTotal,
-        shippingVal, orderTotalVal,
+        item.name, item.qty, o.currency || 'INR',
+        item.price, item.lineTotal,
+        shippingVal, orderTotalVal, orderInrVal,
         o.status, o.paymentStatus,
       ];
       vals.forEach((v, ci) => {
         const cell = row.getCell(ci + 1);
         cell.value = v;
-        applyDataCell(cell, isEven, ci >= 6 && ci <= 10 ? 'center' : 'left');
+        applyDataCell(cell, isEven, ci >= 6 && ci <= 12 ? 'center' : 'left');
         // Status colouring
-        if (ci === 11 || ci === 12) {
+        if (ci === 13 || ci === 14) {
           const sc = statusStyle(String(v));
           cell.font = { bold: true, size: 10, color: { argb: 'FF' + sc.fg }, name: 'Calibri' };
           cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF' + sc.bg } };
         }
-        // Price format
-        if (ci === 7 || ci === 8 || ci === 9 || ci === 10) cell.numFmt = '₹#,##0.00';
+        // INR column format
+        if (ci === 12) cell.numFmt = '₹#,##0.00';
       });
       rowIdx2++;
       itemIdx++;
@@ -263,14 +262,14 @@ export async function GET(req: Request) {
   if (rowIdx2 > 3) {
     const totRow2 = ws2.getRow(rowIdx2);
     totRow2.height = 22;
-    const tv: CellValue[] = ['TOTAL', '', '', '', '', `${orders.length} order(s)`, '', '', totalLineAmt, totalShippingAmt, totalOrderRevenue, '', ''];
+    const tv: CellValue[] = ['TOTAL', '', '', '', '', `${orders.length} order(s)`, '', '', totalLineAmt, totalShippingAmt, '', totalOrderRevenueInr, '', ''];
     tv.forEach((v, ci) => {
       const cell = totRow2.getCell(ci + 1);
       cell.value = v === '' ? null : v;
       cell.font  = { bold: true, size: 10, color: { argb: 'FF' + C.white }, name: 'Calibri' };
       cell.fill  = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF' + C.gold } };
       cell.alignment = { horizontal: 'center', vertical: 'middle' };
-      if ([8, 9, 10].includes(ci)) cell.numFmt = '₹#,##0.00';
+      if (ci === 11) cell.numFmt = '₹#,##0.00';
     });
   }
 
@@ -281,11 +280,11 @@ export async function GET(req: Request) {
   ws3.columns = [
     { width: 18 }, { width: 13 }, { width: 22 }, { width: 28 },
     { width: 15 }, { width: 30 }, { width: 14 }, { width: 12 },
-    { width: 13 }, { width: 14 }, { width: 13 },
+    { width: 10 }, { width: 14 }, { width: 16 }, { width: 14 }, { width: 13 },
   ];
 
   // Title
-  ws3.mergeCells('A1:K1');
+  ws3.mergeCells('A1:M1');
   const s1 = ws3.getCell('A1');
   s1.value = `KrissMaagiic — Service Bookings  |  ${monthName} ${year}`;
   s1.font  = { bold: true, size: 13, color: { argb: 'FF' + C.goldLight }, name: 'Calibri' };
@@ -294,7 +293,7 @@ export async function GET(req: Request) {
   ws3.getRow(1).height = 30;
 
   // Headers
-  const svcHeaders = ['Booking #', 'Date', 'Customer', 'Email', 'Phone', 'Service', 'Booked Date', 'Time Slot', 'Price (₹)', 'Status', 'Payment'];
+  const svcHeaders = ['Booking #', 'Date', 'Customer', 'Email', 'Phone', 'Service', 'Booked Date', 'Time Slot', 'Currency', 'Original Price', 'Price (₹ INR)', 'Status', 'Payment'];
   ws3.getRow(2).height = 24;
   svcHeaders.forEach((h, i) => {
     const cell = ws3.getRow(2).getCell(i + 1);
@@ -309,24 +308,27 @@ export async function GET(req: Request) {
     const isEven = (rowIdx3 % 2 === 0);
     const row = ws3.getRow(rowIdx3);
     row.height = 20;
+    const inrPrice = getInrEquivalent(b.servicePrice || 0, b.currency, b.inrAmount);
     const vals: CellValue[] = [
       b.bookingNumber,
       new Date(b.createdAt).toLocaleDateString('en-IN'),
       b.customer?.name || '', b.customer?.email || '', b.customer?.phone || '',
       b.serviceTitle, b.date, b.timeSlot,
+      b.currency || 'INR',
       b.servicePrice || 0,
+      inrPrice,
       b.status, b.paymentStatus,
     ];
     vals.forEach((v, ci) => {
       const cell = row.getCell(ci + 1);
       cell.value = v;
       applyDataCell(cell, isEven, ci >= 6 ? 'center' : 'left');
-      if (ci === 9 || ci === 10) {
+      if (ci === 11 || ci === 12) {
         const sc = statusStyle(String(v));
         cell.font = { bold: true, size: 10, color: { argb: 'FF' + sc.fg }, name: 'Calibri' };
         cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF' + sc.bg } };
       }
-      if (ci === 8) cell.numFmt = '₹#,##0.00';
+      if (ci === 10) cell.numFmt = '₹#,##0.00';
     });
     rowIdx3++;
   }
@@ -335,14 +337,14 @@ export async function GET(req: Request) {
   if (rowIdx3 > 3) {
     const totRow3 = ws3.getRow(rowIdx3);
     totRow3.height = 22;
-    const tv: CellValue[] = ['TOTAL', '', '', '', '', `${bookings.length} booking(s)`, '', '', bookingRevenue, '', ''];
+    const tv: CellValue[] = ['TOTAL', '', '', '', '', `${bookings.length} booking(s)`, '', '', '', '', bookingRevenue, '', ''];
     tv.forEach((v, ci) => {
       const cell = totRow3.getCell(ci + 1);
       cell.value = v === '' ? null : v;
       cell.font  = { bold: true, size: 10, color: { argb: 'FF' + C.darkBrown }, name: 'Calibri' };
       cell.fill  = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF' + C.goldLight } };
       cell.alignment = { horizontal: 'center', vertical: 'middle' };
-      if (ci === 8) cell.numFmt = '₹#,##0.00';
+      if (ci === 10) cell.numFmt = '₹#,##0.00';
     });
   }
 

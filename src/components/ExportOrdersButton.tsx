@@ -2,32 +2,36 @@
 
 import * as XLSX from 'xlsx';
 
+import { getInrEquivalent } from '@/lib/money';
+
 export default function ExportOrdersButton({ orders }: { orders: unknown[] }) {
   const handleExport = () => {
     // 1. Format the data for Excel
     const data = orders.map((o: any) => {
       // Flatten the order items
-      const itemsStr = o.items.map((i: Record<string, unknown>) => `${i.quantity}x ${i.name}`).join(', ');
+      const itemsStr = o.items ? o.items.map((i: Record<string, unknown>) => `${i.quantity}x ${i.name}`).join(', ') : '';
+      const inrEquivalent = getInrEquivalent(o.total, o.currency, o.inrAmount);
       
       return {
         'Order Number': o.orderNumber,
         'Date': new Date(o.createdAt).toLocaleDateString(),
         'Time': new Date(o.createdAt).toLocaleTimeString(),
         'Status': o.status,
-        'Customer Name': o.customer.name,
-        'Customer Email': o.customer.email,
-        'Customer Phone': o.customer.phone,
+        'Customer Name': o.customer?.name || '',
+        'Customer Email': o.customer?.email || '',
+        'Customer Phone': o.customer?.phone || '',
         'Items': itemsStr,
+        'Currency': o.currency || 'INR',
         'Subtotal': o.subtotal,
         'Shipping': o.shippingCost,
-        'Total': o.total,
-        'Currency': o.currency,
-        'Address Line 1': o.shippingAddress.line1,
-        'Address Line 2': o.shippingAddress.line2 || '',
-        'City': o.shippingAddress.city,
-        'State': o.shippingAddress.state,
-        'Postal Code': o.shippingAddress.postalCode,
-        'Country': o.shippingAddress.country,
+        'Total (Original)': o.total,
+        'Total (₹ INR Equivalent)': inrEquivalent,
+        'Address Line 1': o.shippingAddress?.line1 || '',
+        'Address Line 2': o.shippingAddress?.line2 || '',
+        'City': o.shippingAddress?.city || '',
+        'State': o.shippingAddress?.state || '',
+        'Postal Code': o.shippingAddress?.postalCode || '',
+        'Country': o.shippingAddress?.country || '',
         'Payment ID': o.razorpayPaymentId || '',
       };
     });

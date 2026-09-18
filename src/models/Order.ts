@@ -36,6 +36,7 @@ export interface OrderDoc {
   international: boolean;
   shippingPayment?: ShippingPayment;
   currency: string;
+  inrAmount?: number;
   status: OrderStatus;
   paymentStatus: PaymentStatus;
   razorpayOrderId?: string | null;   // legacy — kept for existing records
@@ -98,6 +99,7 @@ const OrderSchema = new Schema<OrderDoc>(
       paidAt: { type: Date, default: null },
     },
     currency: { type: String, default: 'INR' },
+    inrAmount: { type: Number },
     status: {
       type: String,
       enum: ['pending', 'confirmed', 'shipped', 'delivered', 'cancelled'],

@@ -98,6 +98,7 @@ export default async function AdminOrders(props: PageProps<'/admin/orders'>) {
       shippingCost: ord.shippingCost ?? ord.shipping ?? '',
       total: ord.total ?? '',
       currency: ord.currency ?? 'INR',
+      inrAmount: ord.inrAmount,
       shippingAddress: {
         line1: addr.line1 ?? '',
         line2: addr.line2 ?? '',

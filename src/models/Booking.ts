@@ -23,6 +23,7 @@ export interface BookingDoc {
   cfOrderId?: string;
   cfPaymentId?: string;
   currency?: string;
+  inrAmount?: number;
   customer: {
     name: string;
     email: string;
@@ -40,6 +41,7 @@ const BookingSchema = new Schema<BookingDoc>(
     serviceTitle: { type: String, required: true },
     servicePrice: { type: Number, required: true },
     currency: { type: String, default: 'INR', index: true },
+    inrAmount: { type: Number },
     date: { type: String, default: 'N/A', index: true },
     timeSlot: { type: String, default: 'N/A' },
     question: { type: String, default: '' },

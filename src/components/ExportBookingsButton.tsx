@@ -2,26 +2,30 @@
 
 import * as XLSX from 'xlsx';
 
+import { getInrEquivalent } from '@/lib/money';
+
 export default function ExportBookingsButton({ bookings }: { bookings: any[] }) {
   const handleExport = () => {
     // 1. Format the data for Excel
     const data = bookings.map((b) => {
       // Flatten questions if any
       const answersStr = b.answers ? b.answers.map((a: any) => `${a.question}: ${a.answer}`).join(' | ') : '';
+      const inrEquivalent = getInrEquivalent(b.amountPaid, b.currency, b.inrAmount);
       
       return {
         'Booking Number': b.bookingNumber,
-        'Booking Date': new Date(b.date).toLocaleDateString(),
+        'Booking Date': b.date && b.date !== 'N/A' ? new Date(b.date).toLocaleDateString() : 'N/A',
         'Time Slot': b.timeSlot,
         'Status': b.status,
         'Service Title': b.serviceTitle,
         'Service Type': b.serviceType,
-        'Customer Name': b.customer.name,
-        'Customer Email': b.customer.email,
-        'Customer Phone': b.customer.phone,
-        'Customer Age': b.customer.age || '',
-        'Amount Paid': b.amountPaid,
-        'Currency': b.currency,
+        'Customer Name': b.customer?.name || '',
+        'Customer Email': b.customer?.email || '',
+        'Customer Phone': b.customer?.phone || '',
+        'Customer Age': b.customer?.age || '',
+        'Currency': b.currency || 'INR',
+        'Amount Paid (Original)': b.amountPaid,
+        'Amount Paid (₹ INR Equivalent)': inrEquivalent,
         'Answers': answersStr,
         'Payment ID': b.razorpayPaymentId || '',
         'Created At': new Date(b.createdAt).toLocaleString(),

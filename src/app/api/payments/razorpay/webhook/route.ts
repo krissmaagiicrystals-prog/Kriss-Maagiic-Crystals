@@ -5,28 +5,22 @@ import { Booking } from '@/models/Booking';
 import { fulfillPaidOrder } from '@/lib/orderFulfillment';
 import { fulfillPaidBooking } from '@/lib/bookingFulfillment';
 import { verifyRazorpayWebhook } from '@/lib/razorpay';
+import { getInrEquivalent } from '@/lib/money';
 
 export async function POST(req: Request) {
   const rawBody = await req.text();
   const signature = req.headers.get('x-razorpay-signature') ?? '';
 
-  if (process.env.RAZORPAY_WEBHOOK_SECRET && !verifyRazorpayWebhook(rawBody, signature)) {
+  if (!signature || !verifyRazorpayWebhook(rawBody, signature)) {
     console.warn('[razorpay webhook] invalid signature');
-    return NextResponse.json({ ok: false, reason: 'invalid-signature' }, { status: 401 });
+    return NextResponse.json({ ok: false, reason: 'invalid-signature' }, { status: 400 });
   }
 
-  let event: {
-    event: string;
-    payload: {
-      order?: { entity: { id: string; status: string } };
-      payment?: { entity: { id: string; status: string; order_id: string } };
-    };
-  };
-
+  let event: any;
   try {
     event = JSON.parse(rawBody);
-  } catch {
-    return NextResponse.json({ ok: false, reason: 'bad-json' }, { status: 400 });
+  } catch (err) {
+    return NextResponse.json({ ok: false, reason: 'invalid-json' }, { status: 400 });
   }
 
   if (event.event !== 'order.paid' && event.event !== 'payment.captured') {
@@ -35,6 +29,9 @@ export async function POST(req: Request) {
 
   const razorpayOrderId = event.payload.order?.entity?.id || event.payload.payment?.entity?.order_id;
   const razorpayPaymentId = event.payload.payment?.entity?.id;
+  const paymentEntity = event.payload.payment?.entity;
+  const baseAmountPaise = paymentEntity?.base_amount || (paymentEntity?.currency === 'INR' ? paymentEntity?.amount : undefined);
+  const settledInr = baseAmountPaise ? Math.round(baseAmountPaise / 100) : undefined;
 
   if (!razorpayOrderId) {
     return NextResponse.json({ ok: false, reason: 'missing-order-id' }, { status: 400 });
@@ -49,12 +46,16 @@ export async function POST(req: Request) {
       order.paymentStatus = 'paid';
       order.status = 'confirmed';
       order.razorpayPaymentId = razorpayPaymentId || null;
+      order.inrAmount = settledInr || getInrEquivalent(order.total, order.currency);
       await order.save();
       await fulfillPaidOrder(order);
       console.log('[razorpay webhook] order fulfilled', order.orderNumber);
       return NextResponse.json({ ok: true });
     } else if (!order.razorpayPaymentId && razorpayPaymentId) {
       order.razorpayPaymentId = razorpayPaymentId;
+      if (!order.inrAmount) {
+        order.inrAmount = settledInr || getInrEquivalent(order.total, order.currency);
+      }
       await order.save();
       console.log('[razorpay webhook] order payment ID updated', order.orderNumber);
       return NextResponse.json({ ok: true });
@@ -68,12 +69,16 @@ export async function POST(req: Request) {
       booking.paymentStatus = 'paid';
       booking.status = 'booked';
       booking.razorpayPaymentId = razorpayPaymentId;
+      booking.inrAmount = settledInr || getInrEquivalent(booking.servicePrice, booking.currency);
       await booking.save();
       await fulfillPaidBooking(booking);
       console.log('[razorpay webhook] booking fulfilled', booking.bookingNumber);
       return NextResponse.json({ ok: true });
     } else if (!booking.razorpayPaymentId && razorpayPaymentId) {
       booking.razorpayPaymentId = razorpayPaymentId;
+      if (!booking.inrAmount) {
+        booking.inrAmount = settledInr || getInrEquivalent(booking.servicePrice, booking.currency);
+      }
       await booking.save();
       console.log('[razorpay webhook] booking payment ID updated', booking.bookingNumber);
       return NextResponse.json({ ok: true });

@@ -92,6 +92,7 @@ export default async function AdminBookings(props: PageProps<'/admin/bookings'>)
     },
     amountPaid: (b as { amountPaid?: number }).amountPaid ?? b.servicePrice ?? '',
     currency: b.currency ?? 'INR',
+    inrAmount: b.inrAmount,
     answers: null,
     razorpayPaymentId: b.razorpayPaymentId ?? '',
     createdAt: b.createdAt ? new Date(b.createdAt).toISOString() : '',

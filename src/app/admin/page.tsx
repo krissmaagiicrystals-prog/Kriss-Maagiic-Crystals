@@ -7,7 +7,7 @@ import { User } from '@/models/User';
 import DashboardCharts from './DashboardCharts';
 import MonthlyExport from './MonthlyExport';
 import DashboardFilter from './DashboardFilter';
-import { formatMoney } from '@/lib/money';
+import { formatMoney, getInrEquivalent } from '@/lib/money';
 
 export const dynamic = 'force-dynamic';
 export const metadata = { title: 'Dashboard · Admin' };
@@ -43,6 +43,8 @@ async function loadDashboardData(month?: number, year?: number) {
       usersCount,
       recentOrders,
       recentBookings,
+      paidOrders,
+      paidBookings,
     ] = await Promise.all([
       Order.countDocuments(dateMatch),
       Order.countDocuments({ status: 'pending', ...dateMatch }),
@@ -52,21 +54,13 @@ async function loadDashboardData(month?: number, year?: number) {
       User.countDocuments(),
       Order.find(dateMatch).sort({ createdAt: -1 }).limit(5).lean(),
       Booking.find(dateMatch).sort({ createdAt: -1 }).limit(5).lean(),
+      Order.find({ paymentStatus: 'paid', ...dateMatch }).select('total subtotal currency inrAmount createdAt').lean(),
+      Booking.find({ paymentStatus: 'paid', ...dateMatch }).select('servicePrice currency inrAmount createdAt').lean(),
     ]);
 
-    // Calculate Paid Revenue (paid orders + paid bookings)
-    const [orderRevenueAgg, bookingRevenueAgg] = await Promise.all([
-      Order.aggregate([
-        { $match: { paymentStatus: 'paid', ...dateMatch } },
-        { $group: { _id: null, total: { $sum: '$total' } } },
-      ]),
-      Booking.aggregate([
-        { $match: { paymentStatus: 'paid', ...dateMatch } },
-        { $group: { _id: null, total: { $sum: '$servicePrice' } } },
-      ]),
-    ]);
-    const orderRevenue = orderRevenueAgg[0]?.total ?? 0;
-    const bookingRevenue = bookingRevenueAgg[0]?.total ?? 0;
+    // Calculate Paid Revenue in INR (paid orders + paid bookings converted to INR)
+    const orderRevenue = paidOrders.reduce((s, o) => s + getInrEquivalent(o.total || o.subtotal || 0, o.currency, o.inrAmount), 0);
+    const bookingRevenue = paidBookings.reduce((s, b) => s + getInrEquivalent(b.servicePrice || 0, b.currency, b.inrAmount), 0);
     const revenue = orderRevenue + bookingRevenue;
 
     // Trend window: if filtering by month use that month's days, else last 30 days
@@ -91,22 +85,18 @@ async function loadDashboardData(month?: number, year?: number) {
       }
     }
 
-    // Sales Trend (Paid Revenue by day)
-    const salesTrendRaw = await Order.aggregate([
-      {
-        $match: {
-          paymentStatus: 'paid',
-          createdAt: dateFilter ?? { $gte: trendStart },
-        }
-      },
-      {
-        $group: {
-          _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } },
-          revenue: { $sum: '$total' }
-        }
-      },
-      { $sort: { _id: 1 } }
-    ]);
+    // Sales Trend (Paid Revenue in INR by day)
+    const trendOrders = await Order.find({
+      paymentStatus: 'paid',
+      createdAt: dateFilter ?? { $gte: trendStart },
+    }).select('total subtotal currency inrAmount createdAt').lean();
+
+    const salesMap = new Map<string, number>();
+    for (const o of trendOrders) {
+      const day = new Date(o.createdAt).toISOString().split('T')[0];
+      const val = getInrEquivalent(o.total || o.subtotal || 0, o.currency, o.inrAmount);
+      salesMap.set(day, (salesMap.get(day) || 0) + val);
+    }
 
     // Bookings Trend by day
     const bookingsTrendRaw = await Booking.aggregate([
@@ -124,7 +114,6 @@ async function loadDashboardData(month?: number, year?: number) {
       { $sort: { _id: 1 } }
     ]);
 
-    const salesMap = new Map(salesTrendRaw.map((s) => [s._id, s.revenue]));
     const bookingsMap = new Map(bookingsTrendRaw.map((b) => [b._id, b.count]));
 
     const dailyMetrics = days.map((day) => {

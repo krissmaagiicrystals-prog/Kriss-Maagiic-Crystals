@@ -4,6 +4,7 @@ import { connectMongoose } from '@/lib/mongoose';
 import { Order } from '@/models/Order';
 import { fulfillPaidOrder } from '@/lib/orderFulfillment';
 import { isRazorpayConfigured, verifyPaymentSignature } from '@/lib/razorpay';
+import { getInrEquivalent } from '@/lib/money';
 import { razorpayVerifySchema, zodErrorMessage } from '@/lib/validators';
 
 export async function POST(req: Request) {
@@ -77,6 +78,7 @@ export async function POST(req: Request) {
     order.paymentStatus = 'paid';
     order.status = 'confirmed';
     order.razorpayPaymentId = razorpay_payment_id;
+    order.inrAmount = getInrEquivalent(order.total, order.currency);
     if (!order.razorpayOrderId) {
       order.razorpayOrderId = razorpay_order_id;
     }

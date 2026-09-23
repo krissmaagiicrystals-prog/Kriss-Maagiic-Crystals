@@ -10,7 +10,7 @@ import ProductReviews from './ProductReviews';
 export const dynamic = 'force-dynamic';
 
 const SITE_NAME = 'KrissMaagiic Crystals';
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://krissmaagiiccrystals.com';
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.krissmaagiiccrystals.com';
 
 /** Build a clean, plain-text meta description from a product (skips JSON blobs, trims to ~160 chars). */
 function metaDescriptionFor(product: CatalogProduct): string {

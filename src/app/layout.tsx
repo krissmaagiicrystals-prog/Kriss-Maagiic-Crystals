@@ -35,6 +35,11 @@ const raleway = Raleway({
 });
 
 export const metadata: Metadata = {
+  // Canonical host for every URL-based metadata field. The site serves on www and
+  // 308-redirects the bare domain, so relative canonicals (e.g. on product pages)
+  // must resolve against www or Google sees two addresses for the same page.
+  metadataBase: new URL("https://www.krissmaagiiccrystals.com"),
+  alternates: { canonical: "/" },
   title: {
     default: "KrissMaagiic Crystals | Authentic Healing Crystals & Spiritual Services",
     template: "%s | KrissMaagiic Crystals"
@@ -51,7 +56,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "KrissMaagiic Crystals | Authentic Healing Crystals & Spiritual Services",
     description: "Authentic, energised & intuitively selected premium crystals and spiritual services.",
-    url: "https://krissmaagiiccrystals.com",
+    url: "https://www.krissmaagiiccrystals.com",
     siteName: "KrissMaagiic Crystals",
     locale: "en_IN",
     type: "website",
@@ -100,7 +105,7 @@ export default function RootLayout({
               "@type": "WebSite",
               "name": "Kriss Maagiic Crystals",
               "alternateName": ["Kriss Maagiic", "Kriss Maagiic Crystals", "KrissMaagiic"],
-              "url": "https://krissmaagiiccrystals.com"
+              "url": "https://www.krissmaagiiccrystals.com"
             })
           }}
         />

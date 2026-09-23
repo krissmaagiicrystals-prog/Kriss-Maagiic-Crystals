@@ -8,4 +8,4 @@ Disallow: /cart/
 Disallow: /login
 Disallow: /register
 
-Sitemap: https://krissmaagiiccrystals.com/sitemap.xml
+Sitemap: https://www.krissmaagiiccrystals.com/sitemap.xml

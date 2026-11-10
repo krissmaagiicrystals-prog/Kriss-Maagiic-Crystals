@@ -18,6 +18,18 @@ const nextConfig: NextConfig = {
   },
   async redirects() {
     return [
+      // 301 Permanent Redirect: Redirect staging / Vercel alias to canonical production domain
+      {
+        source: '/:path*',
+        has: [
+          {
+            type: 'host',
+            value: 'kmc-five.vercel.app',
+          },
+        ],
+        destination: 'https://www.krissmaagiiccrystals.com/:path*',
+        permanent: true,
+      },
       {
         source: '/contact-us',
         destination: '/contact',

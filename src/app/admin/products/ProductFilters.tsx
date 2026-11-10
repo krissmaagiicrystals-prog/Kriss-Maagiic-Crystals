@@ -55,10 +55,10 @@ export default function ProductFilters() {
   return (
     <div style={{ background: '#fff', padding: '1rem', borderRadius: 14, marginBottom: '1rem', boxShadow: '0 4px 14px rgba(0,0,0,0.02)' }}>
       <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', alignItems: 'center' }}>
-        {/* Search (Enter or button to apply) */}
+        {/* Search */}
         <form
           onSubmit={(e) => { e.preventDefault(); navigate({ q }); }}
-          style={{ flex: '1 1 240px', position: 'relative', margin: 0 }}
+          style={{ flex: '2 1 240px', position: 'relative', margin: 0 }}
         >
           <i className="fa-solid fa-magnifying-glass" style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: '#aaa', fontSize: '0.9rem' }}></i>
           <input
@@ -71,7 +71,7 @@ export default function ProductFilters() {
           />
         </form>
 
-        {/* Category — applies immediately on change */}
+        {/* Category */}
         <div style={{ flex: '1 1 160px' }}>
           <select value={category} onChange={(e) => navigate({ category: e.target.value })} className="newsletter-input" style={{ width: '100%' }}>
             <option value="">— All Categories —</option>
@@ -81,7 +81,7 @@ export default function ProductFilters() {
           </select>
         </div>
 
-        {/* Status — applies immediately */}
+        {/* Status */}
         <div style={{ flex: '1 1 120px' }}>
           <select value={status} onChange={(e) => navigate({ status: e.target.value })} className="newsletter-input" style={{ width: '100%' }}>
             <option value="">— All Status —</option>
@@ -90,7 +90,7 @@ export default function ProductFilters() {
           </select>
         </div>
 
-        {/* Sort — applies immediately */}
+        {/* Sort */}
         <div style={{ flex: '1 1 150px' }}>
           <select value={sort} onChange={(e) => navigate({ sort: e.target.value })} className="newsletter-input" style={{ width: '100%' }}>
             <option value="">Sort: Newest</option>

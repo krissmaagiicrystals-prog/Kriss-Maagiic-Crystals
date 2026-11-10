@@ -102,6 +102,8 @@ export const productInputSchema = z.object({
   shippingCharge: z.number().min(0).max(100000).nullable().optional(),
   stock: z.number().int().min(0).default(99),
   sizes: z.array(z.string()).default([]),
+  /** Per-size stock map for bracelet products e.g. { "6mm": 5, "8mm": 12 } */
+  sizeStock: z.record(z.string(), z.number().int().min(0)).optional(),
   active: z.boolean().default(true),
 });
 

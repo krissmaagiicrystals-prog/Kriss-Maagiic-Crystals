@@ -3343,6 +3343,16 @@ h1, h2, h3, h4, h5, h6 {
 
 .newsletter-input::placeholder { color: var(--text-light); opacity: 0.6; }
 
+/* Admin selects reuse newsletter-input but need tighter padding so the selected text isn't clipped */
+select.newsletter-input {
+  padding: 0.5rem 2rem 0.5rem 0.75rem;
+  appearance: auto;
+  -webkit-appearance: auto;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
 .newsletter-btn {
   background: linear-gradient(135deg, var(--primary), var(--primary-dark));
   color: #fff;

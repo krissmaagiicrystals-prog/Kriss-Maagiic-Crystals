@@ -31,8 +31,18 @@ export default function ProductDetailsClient({
     : 0;
 
   const [selectedVariantIdx, setSelectedVariantIdx] = useState<number>(defaultVariantIdx);
+
+  // Per-size stock map (only relevant for bracelets-by-crystals without variants)
+  const sizeStock: Record<string, number> = product.sizeStock ?? {};
+  const hasSizeStock = isBraceletsByCrystals && !hasVariants && Object.keys(sizeStock).length > 0;
+
+  // Default to first in-stock size, or first size if all OOS
+  const sizes: string[] = Array.isArray(product.sizes) && product.sizes.length > 0 ? product.sizes : ['8mm'];
   const defaultSize = isBraceletsByCrystals && !hasVariants
-    ? (Array.isArray(product.sizes) && product.sizes.length > 0 ? product.sizes[0] : '8mm')
+    ? (() => {
+        const firstInStock = sizes.find((sz) => !hasSizeStock || (sizeStock[sz] ?? 0) > 0);
+        return firstInStock ?? sizes[0];
+      })()
     : null;
   const [selectedSize, setSelectedSize] = useState<string | null>(defaultSize);
 
@@ -155,24 +165,45 @@ export default function ProductDetailsClient({
               {sizesLabel} <span style={{ color: 'red' }}>*</span>
             </h6>
             <div className="d-flex flex-wrap gap-2">
-              {(Array.isArray(product.sizes) && product.sizes.length > 0 ? product.sizes : ['8mm']).map((sz: string) => (
-                <button
-                  key={sz}
-                  onClick={() => setSelectedSize(sz)}
-                  style={{
-                    padding: '8px 16px',
-                    borderRadius: '8px',
-                    border: selectedSize === sz ? '2px solid var(--primary,#C8956C)' : '1px solid rgba(0,0,0,0.1)',
-                    background: selectedSize === sz ? 'rgba(200, 149, 108, 0.1)' : 'transparent',
-                    color: selectedSize === sz ? 'var(--primary-dark,#A7744D)' : '#555',
-                    fontWeight: 600,
-                    cursor: 'pointer',
-                    transition: 'all 0.2s'
-                  }}
-                >
-                  {sz}
-                </button>
-              ))}
+              {sizes.map((sz: string) => {
+                const oos = hasSizeStock && (sizeStock[sz] ?? 0) === 0;
+                const isSelected = selectedSize === sz;
+                return (
+                  <button
+                    key={sz}
+                    onClick={() => !oos && setSelectedSize(sz)}
+                    disabled={oos}
+                    title={oos ? 'Out of stock' : undefined}
+                    style={{
+                      padding: '8px 16px',
+                      borderRadius: '8px',
+                      border: isSelected ? '2px solid var(--primary,#C8956C)' : '1px solid rgba(0,0,0,0.1)',
+                      background: oos
+                        ? 'rgba(0,0,0,0.04)'
+                        : isSelected
+                          ? 'rgba(200, 149, 108, 0.1)'
+                          : 'transparent',
+                      color: oos ? '#bbb' : isSelected ? 'var(--primary-dark,#A7744D)' : '#555',
+                      fontWeight: 600,
+                      cursor: oos ? 'not-allowed' : 'pointer',
+                      transition: 'all 0.2s',
+                      position: 'relative',
+                      textDecoration: oos ? 'line-through' : 'none',
+                    }}
+                  >
+                    {sz}
+                    {oos && (
+                      <span style={{
+                        position: 'absolute', top: -6, right: -6,
+                        fontSize: '0.55rem', fontWeight: 700, background: '#dc3545',
+                        color: '#fff', borderRadius: 4, padding: '1px 4px', lineHeight: 1.4,
+                      }}>
+                        OOS
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
             </div>
           </div>
         )}
@@ -181,7 +212,11 @@ export default function ProductDetailsClient({
 
         <ProductBuyPanel 
           productId={product.slug} 
-          stock={product.stock} 
+          stock={
+            isBraceletsByCrystals && !hasVariants && selectedSize && hasSizeStock
+              ? (sizeStock[selectedSize] ?? 0)
+              : product.stock
+          }
           variant={isBraceletsByCrystals ? (hasVariants ? currentVariant.name : (selectedSize || undefined)) : (currentVariant ? currentVariant.name : undefined)}
           sizeMandatory={isBraceletsByCrystals && !hasVariants && !selectedSize}
         />

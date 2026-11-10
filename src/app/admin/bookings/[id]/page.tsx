@@ -25,7 +25,7 @@ export default async function AdminBookingDetail(props: PageProps<'/admin/bookin
     <div>
       <Link href="/admin/bookings" style={{ color: 'var(--primary,#C8956C)', fontSize: '0.85rem' }}>← All bookings</Link>
       <h1 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.8rem', marginTop: 12 }}>{b.bookingNumber}</h1>
-      <p style={{ color: '#888' }}>Submitted {new Date(b.createdAt).toLocaleString('en-IN')} · <strong>{b.currency && b.currency !== 'INR' ? '🌍 Abroad' : '🇮🇳 India'}</strong> booking · Current status: <strong>{b.status}</strong></p>
+      <p style={{ color: '#888' }}>Submitted {new Date(b.createdAt).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })} · <strong>{b.currency && b.currency !== 'INR' ? '🌍 Abroad' : '🇮🇳 India'}</strong> booking · Current status: <strong>{b.status}</strong></p>
 
       <div className="row g-4 mt-2">
         <div className="col-lg-7">
@@ -62,7 +62,7 @@ export default async function AdminBookingDetail(props: PageProps<'/admin/bookin
             {(b.paymentStatus || 'unpaid') !== 'paid' && (
               <div style={{ marginTop: 12 }}>
                 <p style={{ fontSize: '0.82rem', color: '#666', marginBottom: 12 }}>
-                  If the customer paid but the status still shows unpaid, click below. We&apos;ll check with Cashfree and mark it paid only if the payment is confirmed — then send the confirmation email.
+                  If the customer paid but the status still shows unpaid, click below. We&apos;ll check with Razorpay and mark it paid only if the payment is confirmed — then send the confirmation email.
                 </p>
                 <ConfirmPaymentButton kind="booking" id={String(b._id)} />
               </div>

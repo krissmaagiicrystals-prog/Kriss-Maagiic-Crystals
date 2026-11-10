@@ -14,10 +14,20 @@ interface SP {
   delivery?: string; // 'india' | 'abroad'
   customized?: string; // 'true'
   gifting?: string; // 'true'
+  from?: string;
+  to?: string;
+  sort?: string;
 }
 
 const SP_LABEL: Record<string, string> = {
   'not-required': '', pending: 'awaiting shipping payment', 'link-sent': 'shipping link sent', paid: 'shipping paid',
+};
+
+const SORTS: Record<string, Record<string, 1 | -1>> = {
+  newest: { createdAt: -1 },
+  oldest: { createdAt: 1 },
+  'price-high': { total: -1 },
+  'price-low': { total: 1 },
 };
 
 export default async function AdminOrders(props: PageProps<'/admin/orders'>) {
@@ -27,6 +37,9 @@ export default async function AdminOrders(props: PageProps<'/admin/orders'>) {
   const q = sp.q || '';
   const customized = sp.customized === 'true';
   const gifting = sp.gifting === 'true';
+  const from = sp.from || '';
+  const to = sp.to || '';
+  const sort = sp.sort && SORTS[sp.sort] ? sp.sort : 'newest';
 
   await connectMongoose();
 
@@ -37,6 +50,12 @@ export default async function AdminOrders(props: PageProps<'/admin/orders'>) {
   if (delivery === 'india') filter.international = { $ne: true };
   if (customized) filter.customizationDetails = { $ne: null };
   if (gifting) filter['customer.giftMessage'] = { $nin: [null, ''] };
+  if (from || to) {
+    const range: Record<string, Date> = {};
+    if (from) range.$gte = new Date(from);
+    if (to) { const end = new Date(to); end.setDate(end.getDate() + 1); range.$lt = end; }
+    filter.createdAt = range;
+  }
   if (q) {
     filter.$or = [
       { orderNumber: { $regex: q, $options: 'i' } },
@@ -48,7 +67,7 @@ export default async function AdminOrders(props: PageProps<'/admin/orders'>) {
 
   // 2. Fetch Orders & aggregate summary metrics
   const [orders, countAgg, abroadCount, indiaCount, customizedCount, giftingCount] = await Promise.all([
-    Order.find(filter).sort({ createdAt: -1 }).lean(),
+    Order.find(filter).sort(SORTS[sort]).lean(),
     Order.aggregate([
       { $group: { _id: '$status', count: { $sum: 1 } } }
     ]),
@@ -71,6 +90,9 @@ export default async function AdminOrders(props: PageProps<'/admin/orders'>) {
     if (delivery) params.set('delivery', delivery);
     if (customized) params.set('customized', 'true');
     if (gifting) params.set('gifting', 'true');
+    if (from) params.set('from', from);
+    if (to) params.set('to', to);
+    if (sort !== 'newest') params.set('sort', sort);
     for (const [k, v] of Object.entries(extra)) { if (v) params.set(k, v); else params.delete(k); }
     const s = params.toString();
     return s ? `/admin/orders?${s}` : '/admin/orders';
@@ -201,34 +223,71 @@ export default async function AdminOrders(props: PageProps<'/admin/orders'>) {
 
       {/* Search Bar */}
       <div style={{ background: '#fff', padding: '1rem', borderRadius: 14, marginBottom: '1rem', boxShadow: '0 4px 14px rgba(0,0,0,0.02)' }}>
-        <form method="GET" action="/admin/orders" style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', alignItems: 'center' }}>
-          {status && <input type="hidden" name="status" value={status} />}
-          {delivery && <input type="hidden" name="delivery" value={delivery} />}
+        <form method="GET" action="/admin/orders">
           {customized && <input type="hidden" name="customized" value="true" />}
           {gifting && <input type="hidden" name="gifting" value="true" />}
-          <div style={{ flex: '1 1 300px', position: 'relative' }}>
-            <i className="fa-solid fa-magnifying-glass" style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: '#aaa', fontSize: '0.9rem' }}></i>
-            <input
-              type="text"
-              name="q"
-              defaultValue={q}
-              placeholder="Search by customer name, email, phone, or order #..."
-              className="newsletter-input"
-              style={{ width: '100%', paddingLeft: '34px' }}
-            />
+
+          {/* Row 1 — Search + Status + Delivery + From + To */}
+          <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', alignItems: 'flex-end', marginBottom: '0.75rem' }}>
+            <div style={{ flex: '2 1 220px' }}>
+              <label style={{ display: 'block', fontSize: '0.7rem', fontWeight: 700, color: '#999', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 }}>Search</label>
+              <div style={{ position: 'relative' }}>
+                <i className="fa-solid fa-magnifying-glass" style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: '#aaa', fontSize: '0.9rem' }}></i>
+                <input
+                  type="text"
+                  name="q"
+                  defaultValue={q}
+                  placeholder="Customer name, email, phone, order #..."
+                  className="newsletter-input"
+                  style={{ width: '100%', paddingLeft: '34px', height: 42 }}
+                />
+              </div>
+            </div>
+
+            <div style={{ flex: '1 1 140px' }}>
+              <label style={{ display: 'block', fontSize: '0.7rem', fontWeight: 700, color: '#999', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 }}>Delivery</label>
+              <select name="delivery" defaultValue={delivery} className="newsletter-input" style={{ height: 42, width: '100%' }}>
+                <option value="">All</option>
+                <option value="india">🇮🇳 India</option>
+                <option value="abroad">🌍 Abroad</option>
+              </select>
+            </div>
+
+            <div style={{ flex: '1 1 140px' }}>
+              <label style={{ display: 'block', fontSize: '0.7rem', fontWeight: 700, color: '#999', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 }}>From</label>
+              <input type="date" name="from" defaultValue={from} className="newsletter-input" style={{ height: 42, width: '100%' }} />
+            </div>
+
+            <div style={{ flex: '1 1 140px' }}>
+              <label style={{ display: 'block', fontSize: '0.7rem', fontWeight: 700, color: '#999', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 }}>To</label>
+              <input type="date" name="to" defaultValue={to} className="newsletter-input" style={{ height: 42, width: '100%' }} />
+            </div>
           </div>
 
-          <button type="submit" className="btn-primary-custom" style={{ padding: '0 18px', height: '42px' }}>
-            Search
-          </button>
+          {/* Row 2 — Sort + buttons */}
+          <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', alignItems: 'flex-end' }}>
+            <div style={{ flex: '1 1 160px' }}>
+              <label style={{ display: 'block', fontSize: '0.7rem', fontWeight: 700, color: '#999', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 }}>Sort by</label>
+              <select name="sort" defaultValue={sort} className="newsletter-input" style={{ height: 42, width: '100%' }}>
+                <option value="newest">Newest first</option>
+                <option value="oldest">Oldest first</option>
+                <option value="price-high">Price: high → low</option>
+                <option value="price-low">Price: low → high</option>
+              </select>
+            </div>
 
-          {(q || status) && (
-            <Link href="/admin/orders" className="btn-outline-custom" style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', height: '42px', padding: '0 16px', textDecoration: 'none' }}>
-              Reset
-            </Link>
-          )}
+            <button type="submit" className="btn-primary-custom" style={{ padding: '0 32px', height: '42px', flex: '1 1 auto', maxWidth: 160 }}>
+              Apply
+            </button>
 
-          <ExportOrdersButton orders={exportRows} />
+            {(q || delivery || from || to || sort !== 'newest') && (
+              <Link href="/admin/orders" className="btn-outline-custom" style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', height: '42px', padding: '0 16px', textDecoration: 'none' }}>
+                Reset
+              </Link>
+            )}
+
+            <ExportOrdersButton orders={exportRows} />
+          </div>
         </form>
       </div>
 

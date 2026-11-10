@@ -28,6 +28,8 @@ export interface ProductDoc {
   shippingCharge?: number | null;
   stock: number;
   sizes?: string[];
+  /** Per-size stock counts for bracelet products (e.g. { "6mm": 5, "8mm": 12 }) */
+  sizeStock?: Map<string, number>;
   active: boolean;
   isDeleted: boolean;
   createdAt: Date;
@@ -66,6 +68,7 @@ const ProductSchema = new Schema<ProductDoc>(
     shippingCharge: { type: Number, default: null },
     stock: { type: Number, default: 99, min: 0 },
     sizes: { type: [String], default: [] },
+    sizeStock: { type: Map, of: Number, default: {} },
     active: { type: Boolean, default: true, index: true },
     isDeleted: { type: Boolean, default: false, index: true },
   },

@@ -36,6 +36,7 @@ export default async function EditProductPage(props: PageProps<'/admin/products/
           shippingCharge: p.shippingCharge ?? null,
           stock: p.stock,
           sizes: p.sizes ?? [],
+          sizeStock: ((p as any).sizeStock ?? {}) as Record<string, number>,
           active: p.active,
         }}
       />

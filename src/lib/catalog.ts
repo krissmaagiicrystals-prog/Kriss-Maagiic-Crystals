@@ -20,6 +20,8 @@ export interface CatalogProduct {
   chakras: string[];
   stock: number;
   sizes?: string[];
+  /** Per-size stock for bracelet products. Missing key = treat as globally stocked. */
+  sizeStock?: Record<string, number>;
   variants?: {
     name: string;
     price: number;
@@ -84,6 +86,7 @@ export async function getAllProducts(): Promise<CatalogProduct[]> {
       longDesc: d.longDesc ?? '',
       chakras: d.chakras ?? [],
       sizes: d.sizes ?? [],
+      sizeStock: d.sizeStock ? Object.fromEntries((d.sizeStock as unknown as Map<string, number>).entries?.() ?? Object.entries(d.sizeStock as unknown as Record<string, number>)) : undefined,
       variants: (d.variants ?? []).map((v: any) => ({
         name: v.name,
         price: v.price,
@@ -123,6 +126,7 @@ export async function getProductBySlug(slug: string): Promise<CatalogProduct | n
         longDesc: d.longDesc ?? '',
         chakras: d.chakras ?? [],
         sizes: d.sizes ?? [],
+        sizeStock: d.sizeStock ? Object.fromEntries((d.sizeStock as unknown as Map<string, number>).entries?.() ?? Object.entries(d.sizeStock as unknown as Record<string, number>)) : undefined,
         variants: (d.variants ?? []).map((v: any) => ({
           name: v.name,
           price: v.price,

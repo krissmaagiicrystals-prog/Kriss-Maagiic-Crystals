@@ -355,7 +355,7 @@ export default async function AdminOrderDetail(props: PageProps<'/admin/orders/[
                 <i className="fa-solid fa-circle-check me-2"></i>Payment
               </h4>
               <p style={{ fontSize: '0.82rem', color: '#666', marginBottom: 16 }}>
-                If the customer paid but the status still shows unpaid, click below. We&apos;ll check with Cashfree and mark it paid only if the payment is confirmed — then send the confirmation email.
+                If the customer paid but the status still shows unpaid, click below. We&apos;ll check with Razorpay and mark it paid only if the payment is confirmed — then send the confirmation email.
               </p>
               <ConfirmPaymentButton kind="order" id={String(order._id)} />
             </div>

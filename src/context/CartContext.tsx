@@ -185,23 +185,31 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   const addItem = useCallback(
     async (productId: string, qty: number = 1) => {
-      const [baseId] = productId.includes('::') ? productId.split('::') : [productId];
+      const [baseId, variantName] = productId.includes('::') ? productId.split('::') : [productId, undefined];
       const p = catalog.find((x) =>
         String(x.id || '').toLowerCase() === baseId.toLowerCase() ||
         String(x.slug || '').toLowerCase() === baseId.toLowerCase() ||
         String(x._id || '').toLowerCase() === baseId.toLowerCase()
       );
 
-      if (p && p.stock === 0) {
-        return;
-      }
+      // Determine the effective stock limit for this specific size
+      const effectiveStock = (() => {
+        if (!p) return Infinity;
+        // If the product has per-size stock and a size variant is selected, use that
+        if (variantName && (p as any).sizeStock && typeof (p as any).sizeStock === 'object') {
+          const sizeQty = (p as any).sizeStock[variantName];
+          if (typeof sizeQty === 'number') return sizeQty;
+        }
+        return p.stock;
+      })();
+
+      if (effectiveStock === 0) return;
 
       const next = [...items];
       const idx = next.findIndex((i) => i.productId === productId);
       const currentQty = idx >= 0 ? next[idx].qty : 0;
       const targetQty = currentQty + qty;
-
-      const cappedQty = p && targetQty > p.stock ? p.stock : targetQty;
+      const cappedQty = effectiveStock !== Infinity && targetQty > effectiveStock ? effectiveStock : targetQty;
 
       if (idx >= 0) {
         next[idx] = { ...next[idx], qty: cappedQty };
@@ -219,14 +227,23 @@ export function CartProvider({ children }: { children: ReactNode }) {
         persist(items.filter((i) => i.productId !== productId));
         return;
       }
-      const [baseId] = productId.includes('::') ? productId.split('::') : [productId];
+      const [baseId, variantName] = productId.includes('::') ? productId.split('::') : [productId, undefined];
       const p = catalog.find((x) =>
         String(x.id || '').toLowerCase() === baseId.toLowerCase() ||
         String(x.slug || '').toLowerCase() === baseId.toLowerCase() ||
         String(x._id || '').toLowerCase() === baseId.toLowerCase()
       );
 
-      const cappedQty = p && qty > p.stock ? p.stock : qty;
+      const effectiveStock = (() => {
+        if (!p) return Infinity;
+        if (variantName && (p as any).sizeStock && typeof (p as any).sizeStock === 'object') {
+          const sizeQty = (p as any).sizeStock[variantName];
+          if (typeof sizeQty === 'number') return sizeQty;
+        }
+        return p.stock;
+      })();
+
+      const cappedQty = effectiveStock !== Infinity && qty > effectiveStock ? effectiveStock : qty;
       persist(items.map((i) => (i.productId === productId ? { ...i, qty: cappedQty } : i)));
     },
     [items, persist, catalog],

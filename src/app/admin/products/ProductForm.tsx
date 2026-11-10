@@ -21,12 +21,14 @@ interface Initial {
   shippingCharge: number | null;
   stock: number;
   sizes: string[];
+  /** Per-size stock for bracelet products e.g. { "6mm": 5, "8mm": 12 } */
+  sizeStock: Record<string, number>;
   active: boolean;
 }
 
 const EMPTY: Initial = {
   slug: '', name: '', category: 'bracelets', subcategory: 'Bracelets', price: 0, originalPrice: null, usdPrice: 0, originalUsdPrice: null,
-  image: '', images: [], badge: null, desc: '', longDesc: '', chakras: [], shippingCharge: null, stock: 99, sizes: [], active: true,
+  image: '', images: [], badge: null, desc: '', longDesc: '', chakras: [], shippingCharge: null, stock: 99, sizes: [], sizeStock: {}, active: true,
 };
 
 const STANDARD_CATEGORIES = [
@@ -232,7 +234,7 @@ function getDynamicSections(
 export default function ProductForm({ id, initial }: { id?: string; initial?: Initial }) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [f, setF] = useState<Initial>(initial ? { ...EMPTY, ...initial, sizes: initial.sizes ?? [] } : EMPTY);
+  const [f, setF] = useState<Initial>(initial ? { ...EMPTY, ...initial, sizes: initial.sizes ?? [], sizeStock: initial.sizeStock ?? {} } : EMPTY);
   const [saving, setSaving] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
@@ -455,16 +457,28 @@ export default function ProductForm({ id, initial }: { id?: string; initial?: In
     set('chakras', current);
   };
 
-  // Size toggle helper
+  // Size toggle helper — also prunes sizeStock when a size is deselected
   const toggleSize = (size: string) => {
     const current = [...(f.sizes || [])];
     const index = current.indexOf(size);
     if (index > -1) {
       current.splice(index, 1);
+      // Remove the stock entry for the deselected size
+      const newSizeStock = { ...f.sizeStock };
+      delete newSizeStock[size];
+      setF((s) => ({ ...s, sizes: current, sizeStock: newSizeStock }));
     } else {
       current.push(size);
+      // Seed with 0 if not yet set
+      const newSizeStock = { ...f.sizeStock };
+      if (!(size in newSizeStock)) newSizeStock[size] = 0;
+      setF((s) => ({ ...s, sizes: current, sizeStock: newSizeStock }));
     }
-    set('sizes', current);
+  };
+
+  // Per-size stock helper
+  const setSizeStock = (size: string, qty: number) => {
+    setF((s) => ({ ...s, sizeStock: { ...s.sizeStock, [size]: Math.max(0, qty) } }));
   };
   // Dynamic sections helper functions
   const addSection = (type: 'text' | 'list' | 'affirmation' | 'disclaimer') => {
@@ -623,6 +637,7 @@ export default function ProductForm({ id, initial }: { id?: string; initial?: In
       category: finalCategory,
       subcategory: finalSubcategory,
       longDesc: longDescJson,
+      sizeStock: f.sizeStock,
     };
 
     try {
@@ -946,6 +961,36 @@ export default function ProductForm({ id, initial }: { id?: string; initial?: In
               })}
             </div>
             <div style={{ fontSize: '0.72rem', color: '#999', marginTop: 4 }}>Select the bead sizes you want to make available for this bracelet.</div>
+
+            {/* Per-size stock inputs — only shown when at least one size is selected */}
+            {(f.sizes ?? []).length > 0 && (
+              <div style={{ marginTop: 14, background: '#FAF6F1', borderRadius: 10, padding: '12px 16px', border: '1px solid rgba(200,149,108,0.18)' }}>
+                <div style={{ fontSize: '0.78rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#B0A38F', marginBottom: 10 }}>
+                  Stock per size
+                </div>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12 }}>
+                  {(f.sizes ?? []).map((sz) => (
+                    <div key={sz} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <span style={{ fontSize: '0.85rem', fontWeight: 700, color: '#2D1B0E', minWidth: 36 }}>{sz}</span>
+                      <input
+                        type="number"
+                        min={0}
+                        value={f.sizeStock[sz] ?? 0}
+                        onChange={(e) => setSizeStock(sz, Number(e.target.value))}
+                        className="newsletter-input"
+                        style={{ width: 72, padding: '5px 8px', textAlign: 'right', fontSize: '0.88rem' }}
+                      />
+                      {(f.sizeStock[sz] ?? 0) === 0 && (
+                        <span style={{ fontSize: '0.68rem', fontWeight: 700, color: '#dc3545', background: 'rgba(220,53,69,0.08)', padding: '2px 6px', borderRadius: 4 }}>OOS</span>
+                      )}
+                    </div>
+                  ))}
+                </div>
+                <div style={{ fontSize: '0.72rem', color: '#999', marginTop: 8 }}>
+                  Set stock for each size. 0 = out of stock for that size (customers won&#39;t be able to select it).
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>
